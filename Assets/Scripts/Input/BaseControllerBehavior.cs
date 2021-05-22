@@ -38,8 +38,7 @@ namespace TiltBrush
         [FormerlySerializedAs("m_Offset")] [SerializeField] private Vector3 m_GeometryOffset;
         [FormerlySerializedAs("m_Rotation")]
         [SerializeField]
-        private Quaternion m_GeometryRotation
-            = Quaternion.identity;
+        private Quaternion m_GeometryRotation = Quaternion.identity;
 
         // -------------------------------------------------------------------------------------------- //
         // Private Fields

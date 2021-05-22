@@ -182,6 +182,12 @@ namespace TiltBrush
             }
 #endif // OCULUS_SUPPORTED
 
+            // TODO-XR - Set the per platform info
+
+            // if (App.Config.m_SdkMode == SdkMode.UnityXr)
+            // {
+            // }
+
             if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
 #if OCULUS_SUPPORTED
@@ -273,10 +279,10 @@ namespace TiltBrush
                 // ---------------------------------------------------------------------------------------- //
                 SetControllerStyle(TiltBrush.ControllerStyle.None);
                 // Offset for head position, since camera height is set by the VR system.
-                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
+                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f); // TODO-XR - won't need this. 
             }
             m_VrCamera.gameObject.SetActive(true);
-            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf);
+            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf); 
         }
 
         void Start()
@@ -724,6 +730,13 @@ namespace TiltBrush
         // - Info, which encapsulates VR APIs (OVR, SteamVR, GVR, ...)
         public ControllerInfo CreateControllerInfo(BaseControllerBehavior behavior, bool isLeftHand)
         {
+            // An XR controller handles all controllers for platforms that support the Unity XR plugin system.
+            if (App.Config.m_SdkMode == SdkMode.UnityXr)
+            {
+                return new XrControllerInfo(behavior, isLeftHand);
+            }
+            
+            // TODO-XR - Delete old ControllerInfo creators.
             if (App.Config.m_SdkMode == SdkMode.SteamVR)
             {
                 return new SteamControllerInfo(behavior);

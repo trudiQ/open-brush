@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace TiltBrush
 {
@@ -47,6 +48,7 @@ namespace TiltBrush
         Monoscopic,
         Ods,
         Gvr,
+        UnityXr             // Unity XR plugin system. Replaces individual SDK implementations. 
     }
 
     // These names are used in our analytics, so they must be protected from obfuscation.
@@ -119,7 +121,7 @@ namespace TiltBrush
         // Public to allow App.cs and BuildTiltBrush.cs to access it; do not use it otherwise.
         public bool m_IsExperimental;
 
-        // The sdk mode indicates which SDK (OVR, SteamVR, etc.) that we're using to drive the display.
+        // The sdk mode indicates which SDK (UnityXr, OVR, SteamVR, etc.) that we're using to drive the display.
         public SdkMode m_SdkMode;
 
         // Whether or not to just do an automatic profile and then exit.
@@ -141,50 +143,76 @@ namespace TiltBrush
         // is being used (Oculus VR, Steam's Open VR, Monoscopic, etc.).
         public VrHardware VrHardware
         {
+            // TODO-XR - Read hardware from XR plugin
+            
             // This is set lazily the first time VrHardware is accessed.
             get
             {
                 if (m_VrHardware == TiltBrush.VrHardware.Unset)
                 {
-                    if (m_SdkMode == SdkMode.Oculus)
+                    // Decide which hardware we are using by the headset.
+                    var inputDevices = new List<InputDevice>();
+                    InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, inputDevices);
+
+                    if (inputDevices.Count > 0)
                     {
-                        if (App.Config.IsMobileHardware)
+                        var device = inputDevices[0];
+                        
+                        if (device.manufacturer == "Oculus")
                         {
-                            m_VrHardware = VrHardware.Quest;
-                        }
-                        else
-                        {
-                            m_VrHardware = VrHardware.Rift;
-                        }
-                    }
-                    else if (m_SdkMode == SdkMode.SteamVR)
-                    {
-                        // If SteamVR fails for some reason we will discover it here.
-                        try
-                        {
-                            if (Valve.VR.OpenVR.System == null)
+                            //if (App.Config.IsMobileHardware)
+                            if (device.name.Contains("Quest"))
                             {
-                                m_VrHardware = VrHardware.None;
-                                return m_VrHardware;
+                                m_VrHardware = VrHardware.Quest;
+                            }
+                            else if (device.name.Contains("Rift"))
+                            {
+                                m_VrHardware = VrHardware.Rift;
                             }
                         }
-                        catch (Exception)
-                        {
-                            m_VrHardware = VrHardware.None;
-                            return m_VrHardware;
-                        }
 
-                        // GetHwTrackedInSteamVr relies on headset detection, so controllers don't have to be on.
-                        m_VrHardware = GetHwTrackedInSteamVr();
+                        // TODO-XR - Other platform identifier strings.
                     }
-                    else if (m_SdkMode == SdkMode.Gvr)
-                    {
-                        m_VrHardware = TiltBrush.VrHardware.Daydream;
-                    }
-                    else
-                    {
-                        m_VrHardware = VrHardware.None;
-                    }
+
+                //     if (m_SdkMode == SdkMode.Oculus)
+                //     {
+                //         if (App.Config.IsMobileHardware)
+                //         {
+                //             m_VrHardware = VrHardware.Quest;
+                //         }
+                //         else
+                //         {
+                //             m_VrHardware = VrHardware.Rift;
+                //         }
+                //     }
+                //     else if (m_SdkMode == SdkMode.SteamVR)
+                //     {
+                //         // If SteamVR fails for some reason we will discover it here.
+                //         try
+                //         {
+                //             if (Valve.VR.OpenVR.System == null)
+                //             {
+                //                 m_VrHardware = VrHardware.None;
+                //                 return m_VrHardware;
+                //             }
+                //         }
+                //         catch (Exception)
+                //         {
+                //             m_VrHardware = VrHardware.None;
+                //             return m_VrHardware;
+                //         }
+                //
+                //         // GetHwTrackedInSteamVr relies on headset detection, so controllers don't have to be on.
+                //         m_VrHardware = GetHwTrackedInSteamVr();
+                //     }
+                //     else if (m_SdkMode == SdkMode.Gvr)
+                //     {
+                //         m_VrHardware = TiltBrush.VrHardware.Daydream;
+                //     }
+                //     else
+                //     {
+                //         m_VrHardware = VrHardware.None;
+                //     }
                 }
 
                 return m_VrHardware;

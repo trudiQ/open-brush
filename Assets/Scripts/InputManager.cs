@@ -403,6 +403,8 @@ namespace TiltBrush
 
         void CreateControllerInfos()
         {
+            // TODO-XR - controller config 
+            
             VrControllers vrControllers = App.VrSdk.VrControls;
             if (vrControllers != null)
             {

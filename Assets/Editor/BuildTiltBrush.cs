@@ -149,7 +149,7 @@ static class BuildTiltBrush
     {
         get
         {
-            return AsEnum(EditorPrefs.GetString(kMenuSdkPref, "SteamVR"), SdkMode.SteamVR);
+            return AsEnum(EditorPrefs.GetString(kMenuSdkPref, "UnityXr"), SdkMode.UnityXr);
         }
         set
         {
@@ -697,7 +697,7 @@ static class BuildTiltBrush
         TiltBuildOptions tiltOptions = new TiltBuildOptions()
         {
             Stamp = "",
-            VrSdk = SdkMode.SteamVR,
+            VrSdk = SdkMode.UnityXr,
             UnityOptions = BuildOptions.None,
         };
         string keystoreName = null;
