@@ -303,7 +303,7 @@ namespace TiltBrush
         void Update()
         {
             //update brush audio
-            if (m_AudioSources.Length > 0)
+            if (m_CurrentBrush != null && m_AudioSources.Length > 0)
             {
                 //smooth volume and pitch out a bit from frame to frame
                 float fFadeStepUp = m_BrushAudioAdjustSpeedUp * Time.deltaTime;
