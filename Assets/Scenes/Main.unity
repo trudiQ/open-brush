@@ -3193,7 +3193,7 @@ MonoBehaviour:
   m_FakeCommandLineArgsInEditor: 
   m_PlatformConfig: {fileID: 11400000, guid: 0764a106823cbec4e8d75b2816f3cbd3, type: 2}
   m_IsExperimental: 1
-  m_SdkMode: 3
+  m_SdkMode: 0
   m_AutoProfile: 0
   m_AutoProfileWaitTime: 10
   Secrets: {fileID: 11400000, guid: 2f5f8e93c6bc7be49a5023148b50e7a0, type: 2}
@@ -6888,7 +6888,7 @@ RectTransform:
   - {fileID: 617891838}
   - {fileID: 756087798}
   m_Father: {fileID: 652605545}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -9215,9 +9215,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 152983284}
-  - {fileID: 1412532063}
   - {fileID: 383974627}
   - {fileID: 669339392}
+  - {fileID: 1412532063}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -9926,7 +9926,7 @@ Transform:
   - {fileID: 1894562680}
   - {fileID: 2095572864}
   m_Father: {fileID: 652605545}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &670109498
 PrefabInstance:
@@ -17292,8 +17292,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1412532063}
   - component: {fileID: 1412532062}
-  - component: {fileID: 1412532065}
-  - component: {fileID: 1412532064}
   m_Layer: 0
   m_Name: VrSdk
   m_TagString: Untagged
@@ -17355,34 +17353,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 652605545}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1412532064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1412532061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 017c5e3933235514c9520e1dace2a4b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ActionAssets:
-  - {fileID: -944628639613478452, guid: 3bfe23005af1ccf47b5f4ba613842034, type: 3}
---- !u!114 &1412532065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1412532061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1414582882
 GameObject:
   m_ObjectHideFlags: 0
