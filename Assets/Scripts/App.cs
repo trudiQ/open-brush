@@ -187,7 +187,7 @@ namespace TiltBrush
             get { return m_Instance; }
 #if UNITY_EDITOR
             // Bleh. Needed by BuildTiltBrush.cs
-            set { m_Instance = value; }
+            internal set { m_Instance = value; }
 #endif
         }
 

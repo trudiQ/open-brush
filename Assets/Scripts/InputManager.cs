@@ -16,9 +16,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
-using KeyMap = System.Collections.Generic.Dictionary<
-    int,
-    UnityEngine.KeyCode[]>;
+using KeyMap = System.Collections.Generic.Dictionary<int, UnityEngine.KeyCode[]>;
+using TouchPhase = UnityEngine.TouchPhase;
 
 namespace TiltBrush
 {
@@ -849,17 +848,17 @@ namespace TiltBrush
             return Input.GetAxis("Mouse ScrollWheel");
         }
 
-        /// Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
-        /// presses when you fiddle with the joystick.
         public bool GetMouseButton(int button)
         {
+            // Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
+            // presses when you fiddle with the joystick.
             return !App.Config.IsMobileHardware && Input.GetMouseButton(button);
         }
 
-        /// Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
-        /// presses when you fiddle with the joystick.
         public bool GetMouseButtonDown(int button)
         {
+            // Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
+            // presses when you fiddle with the joystick.
             return !App.Config.IsMobileHardware && Input.GetMouseButtonDown(button);
         }
 

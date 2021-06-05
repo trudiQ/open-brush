@@ -120,8 +120,8 @@ namespace TiltBrush
         public enum DoF
         {
             None,
-            Two, // Mouse & Keyboard
-            Six, // Vive, Rift, etc
+            Two,    // Mouse & Keyboard
+            Six,    // Vive, Rift, etc
         }
 
         // -------------------------------------------------------------------------------------------- //
