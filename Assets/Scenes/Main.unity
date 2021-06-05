@@ -17315,7 +17315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AnalogGripBinaryThreshold_Rift: 0.9
   m_SteamVROverlay: {fileID: 622233200}
-  m_GvrOverlayPrefab: {fileID: 114044421867326160, guid: 50a6faaa5f4e1cf4487e55d232fa8d39,
+  m_MobileOverlayPrefab: {fileID: 114044421867326160, guid: 50a6faaa5f4e1cf4487e55d232fa8d39,
     type: 3}
   m_OverlayMaxAlpha: 0.5
   m_OverlayMaxSize: 8

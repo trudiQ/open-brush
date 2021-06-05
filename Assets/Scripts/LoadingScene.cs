@@ -21,7 +21,7 @@ namespace TiltBrush
 
     public class LoadingScene : MonoBehaviour
     {
-        [SerializeField] private GvrOverlay m_Overlay;
+        [SerializeField] private DefaultOverlay m_Overlay;
         [SerializeField] private Camera m_VrCamera;
         [SerializeField] private float m_MaximumLoadingTime;
         // Amount of the progress bar taken up by the scene load

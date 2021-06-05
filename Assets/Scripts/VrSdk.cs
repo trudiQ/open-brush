@@ -56,7 +56,7 @@ namespace TiltBrush
     {
         [SerializeField] private float m_AnalogGripBinaryThreshold_Rift;
         [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
-        [SerializeField] private GvrOverlay m_GvrOverlayPrefab;
+        [SerializeField] private DefaultOverlay m_MobileOverlayPrefab;
         [SerializeField] private float m_OverlayMaxAlpha = 1.0f;
         [SerializeField] private float m_OverlayMaxSize = 8;
 
@@ -96,7 +96,7 @@ namespace TiltBrush
 
         // Mobile Overlay
         private bool m_MobileOverlayOn;
-        private GvrOverlay m_MobileOverlay;
+        private DefaultOverlay m_MobileOverlay;
 
         private Bounds? m_RoomBoundsAabbCached;
 
@@ -156,10 +156,10 @@ namespace TiltBrush
 
         void Awake()
         {
-            if (App.Config.IsMobileHardware && m_GvrOverlayPrefab != null)
+            if (App.Config.IsMobileHardware && m_MobileOverlayPrefab != null)
             {
                 m_OverlayMode = OverlayMode.Mobile;
-                m_MobileOverlay = Instantiate(m_GvrOverlayPrefab);
+                m_MobileOverlay = Instantiate(m_MobileOverlayPrefab);
                 m_MobileOverlay.gameObject.SetActive(false);
             }
             else if (App.Config.m_SdkMode == SdkMode.SteamVR && m_SteamVROverlay != null)

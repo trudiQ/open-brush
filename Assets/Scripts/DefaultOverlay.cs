@@ -18,7 +18,9 @@ using UnityEngine;
 namespace TiltBrush
 {
 
-    public class GvrOverlay : MonoBehaviour
+    // Simple default overlay.
+    //  - Used for mobile devices.
+    public class DefaultOverlay : MonoBehaviour
     {
         [SerializeField] MeshRenderer m_ProgressIndicator;
         [SerializeField] TextMeshPro m_Message;
