@@ -17,7 +17,7 @@ using Valve.VR;
 
 namespace TiltBrush
 {
-    public class SteamOverlay : Overlay
+    public class SteamOverlay : OverlayImplementation
     {
         private SteamVR_Overlay m_SteamVROverlay;
         

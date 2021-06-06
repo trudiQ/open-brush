@@ -19,7 +19,7 @@ using NodeState = UnityEngine.XR.XRNodeState;
 #if OCULUS_SUPPORTED
 namespace TiltBrush
 {
-    public class OculusOverlay : Overlay
+    public class OculusOverlay : OverlayImplementation
     {
         private OVROverlay m_OVROverlay;
         private GameObject m_VrSystem;

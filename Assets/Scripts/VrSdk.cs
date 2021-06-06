@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Valve.VR;
-#if !OCULUS_SUPPORTED
-using OVROverlay = UnityEngine.MonoBehaviour;
-#endif // !OCULUS_SUPPORTED
 
 
 namespace TiltBrush
@@ -75,107 +72,8 @@ namespace TiltBrush
 
     public abstract class Device
     {
-        private Overlay m_overlay;
+        private OverlayImplementation m_overlay;
         private List<Controller> m_controllers = new List<Controller>();
-    }
-
-    //
-    public abstract class Overlay
-    {
-        public abstract bool Enabled { get; set; } 
-        
-        public abstract void Initialise();
-
-        public virtual void SetTexture(Texture tex) { }
-        public virtual void SetAlpha(float ratio) { }
-        public virtual void SetPosition(float distance, float height) { }
-        
-        // Overlay Methods
-        // (These should only be accessed via OverlayManager.)
-
-        public virtual void PauseRendering(bool pause) { }
-
-        // Fades to the compositor world (if available) or black.
-        public void FadeToCompositor(float fadeTime)
-        {
-            FadeToCompositor(fadeTime, fadeToCompositor: true);
-        }
-
-        // Fades from the compositor world (if available) or black.
-        public void FadeFromCompositor(float fadeTime)
-        {
-            FadeToCompositor(fadeTime, fadeToCompositor: false);
-        }
-
-        protected virtual void FadeToCompositor(float fadeTime, bool fadeToCompositor) { }
-        
-        // Fades to solid black.
-        public void FadeToBlack(float fadeTime)
-        {
-            FadeBlack(fadeTime, fadeToBlack: true);
-        }
-
-        // Fade from solid black.
-        public void FadeFromBlack(float fadeTime)
-        {
-            FadeBlack(fadeTime, fadeToBlack: false);
-        }
-
-        protected virtual void FadeBlack(float fadeTime, bool fadeToBlack) { }
-    }
-    
-    public class MobileOverlay : Overlay
-    {
-        [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
-        private SimpleOverlay m_overlayInstance;
-        private bool m_enabled = false;
-        private Camera m_VrCamera;
-
-        public override bool Enabled
-        {
-            get { return m_enabled; }
-            set { m_enabled = value; }
-        }
-
-        public MobileOverlay(SimpleOverlay prefab, Camera cam)
-        {
-            m_MobileOverlayPrefab = prefab;
-            m_VrCamera = cam;
-        }
-            
-        public override void Initialise()
-        {
-            m_overlayInstance = GameObject.Instantiate(m_MobileOverlayPrefab);
-            m_overlayInstance.gameObject.SetActive(false);
-        }
-
-        public override void SetAlpha(float ratio)
-        {
-            if (!Enabled && ratio > 0.0f)
-            {
-                // Position screen overlay in front of the camera.
-                m_overlayInstance.transform.parent = m_VrCamera.transform;
-                m_overlayInstance.transform.localPosition = Vector3.zero;
-                m_overlayInstance.transform.localRotation = Quaternion.identity;
-                float scale = 0.5f * m_VrCamera.farClipPlane / m_VrCamera.transform.lossyScale.z;
-                m_overlayInstance.transform.localScale = Vector3.one * scale;
-
-                // Reparent the overlay so that it doesn't move with the headset.
-                m_overlayInstance.transform.parent = null;
-
-                // Reset the rotation so that it's level and centered on the horizon.
-                Vector3 eulerAngles = m_overlayInstance.transform.localRotation.eulerAngles;
-                m_overlayInstance.transform.localRotation = Quaternion.Euler(new Vector3(0, eulerAngles.y, 0));
-
-                m_overlayInstance.gameObject.SetActive(true);
-                Enabled = true;
-            }
-            else if (Enabled && ratio == 0.0f)
-            {
-                m_overlayInstance.gameObject.SetActive(false);
-                Enabled = false;
-            }
-        }
     }
 
     public abstract class Controller
@@ -217,15 +115,12 @@ namespace TiltBrush
     {
         [SerializeField] private float m_AnalogGripBinaryThreshold_Rift;
 
-        private Overlay m_overlay; // new overlay
-        public Overlay Overlay { get => m_overlay; }
+        private OverlayImplementation m_overlay; // new overlay
+        public OverlayImplementation Overlay { get => m_overlay; }
 
         // TODO: Move to the overlay implementations. 
         [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
         [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
-#if OCULUS_SUPPORTED
-        //private OVROverlay m_OVROverlay;
-#endif // OCULUS_SUPPORTED
 
         // VR  Data and Prefabs for specific VR systems
         [SerializeField] private GameObject m_VrSystem;
