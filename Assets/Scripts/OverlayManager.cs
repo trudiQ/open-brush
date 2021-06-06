@@ -73,7 +73,7 @@ namespace TiltBrush
 
         public bool CanDisplayQuickloadOverlay
         {
-            get { return !App.VrSdk.OverlayEnabled || m_CurrentOverlayType == OverlayType.LoadSketch; }
+            get { return !App.VrSdk.Overlay.Enabled || m_CurrentOverlayType == OverlayType.LoadSketch; }
         }
 
         public OverlayState CurrentOverlayState => m_CurrentOverlayState;
@@ -96,13 +96,13 @@ namespace TiltBrush
             {
                 case OverlayState.Exiting:
                     m_OverlayStateTransitionValue -= Time.deltaTime;
-                    App.VrSdk.SetOverlayAlpha(
+                    App.VrSdk.Overlay.SetAlpha(
                         Mathf.Max(m_OverlayStateTransitionValue, 0.0f) / m_OverlayStateTransitionDuration);
                     if (m_OverlayStateTransitionValue <= 0.0f)
                     {
                         m_OverlayStateTransitionValue = 0.0f;
                         m_CurrentOverlayState = OverlayState.Hidden;
-                        App.VrSdk.OverlayEnabled = false;
+                        App.VrSdk.Overlay.Enabled = false;
                     }
                     break;
                 case OverlayState.Hidden:
@@ -113,7 +113,7 @@ namespace TiltBrush
 
         void OnGUI()
         {
-            if (App.VrSdk.OverlayEnabled)
+            if (App.VrSdk.Overlay.Enabled)
             {
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), m_BlackTexture);
                 GUI.DrawTexture(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4,
@@ -129,32 +129,32 @@ namespace TiltBrush
                 case OverlayType.LoadSketch:
                     SetText("Loading Sketch...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
                 case OverlayType.LoadModel:
                     SetText("Loading Models...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
                 case OverlayType.LoadGeneric:
                     SetText("Loading...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
                 case OverlayType.LoadImages:
                     SetText("Loading Images...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
                 case OverlayType.Export:
                     SetText("Exporting...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
                 case OverlayType.LoadMedia:
                     SetText("Loading Media...");
                     RenderLogo(0);
-                    App.VrSdk.SetOverlayTexture(m_GUILogo);
+                    App.VrSdk.Overlay.SetTexture(m_GUILogo);
                     break;
             }
         }
@@ -213,7 +213,7 @@ namespace TiltBrush
             SetOverlayFromType(overlayType);
             UpdateProgress(bFullProgress ? 1.0f : 0.0f);
 
-            App.VrSdk.SetOverlayAlpha(0);
+            App.VrSdk.Overlay.SetAlpha(0);
             yield return null;
 
             bool routineInterrupted = true;
@@ -324,7 +324,7 @@ namespace TiltBrush
             bool bFullProgress = false;
             UpdateProgress(bFullProgress ? 1.0f : 0.0f);
 
-            App.VrSdk.SetOverlayAlpha(0);
+            App.VrSdk.Overlay.SetAlpha(0);
             await Awaiters.NextFrame;
 
             try
@@ -380,7 +380,7 @@ namespace TiltBrush
             bool bFullProgress = false;
             UpdateProgress(bFullProgress ? 1.0f : 0.0f);
 
-            App.VrSdk.SetOverlayAlpha(0);
+            App.VrSdk.Overlay.SetAlpha(0);
             await Awaiters.NextFrame;
 
             try
@@ -429,11 +429,11 @@ namespace TiltBrush
         public void SetOverlayTransitionRatio(float fRatio)
         {
             m_OverlayStateTransitionValue = m_OverlayStateTransitionDuration * fRatio;
-            bool overlayWasActive = App.VrSdk.OverlayEnabled;
-            App.VrSdk.SetOverlayAlpha(fRatio);
-            if (!overlayWasActive && App.VrSdk.OverlayEnabled)
+            bool overlayWasActive = App.VrSdk.Overlay.Enabled;
+            App.VrSdk.Overlay.SetAlpha(fRatio);
+            if (!overlayWasActive && App.VrSdk.Overlay.Enabled)
             {
-                App.VrSdk.PositionOverlay(m_OverlayOffsetDistance, m_OverlayHeight);
+                App.VrSdk.Overlay.SetPosition(m_OverlayOffsetDistance, m_OverlayHeight);
             }
             m_CurrentOverlayState = OverlayState.Visible;
         }
