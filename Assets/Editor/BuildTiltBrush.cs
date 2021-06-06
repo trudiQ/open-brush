@@ -345,24 +345,24 @@ static class BuildTiltBrush
             GuiExperimental ? "_Experimental" : "",
             GuiRuntimeIl2cpp ? "_Il2cpp" : "",
             GuiAutoProfile ? "_AutoProfile" : "",
-            App.kGuiBuildExecutableName);
+            Build.kGuiBuildExecutableName);
         var location = Path.GetDirectoryName(Path.GetDirectoryName(Application.dataPath));
 
         location = Path.Combine(Path.Combine(location, "Builds"), directoryName);
         switch (buildTarget)
         {
             case BuildTarget.Android:
-                location += "/" + App.kGuiBuildAndroidExecutableName;
+                location += "/" + Build.kGuiBuildAndroidExecutableName;
                 break;
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                location += "/" + App.kGuiBuildWindowsExecutableName;
+                location += "/" + Build.kGuiBuildWindowsExecutableName;
                 break;
             case BuildTarget.StandaloneLinux64:
-                location += "/" + App.kGuiBuildLinuxExecutableName;
+                location += "/" + Build.kGuiBuildLinuxExecutableName;
                 break;
             case BuildTarget.StandaloneOSX:
-                location += "/" + App.kGuiBuildOSXExecutableName;
+                location += "/" + Build.kGuiBuildOSXExecutableName;
                 break;
             default:
                 throw new BuildFailedException("Unsupported BuildTarget: " + buildTarget.ToString());
@@ -944,7 +944,7 @@ static class BuildTiltBrush
             m_name = PlayerSettings.productName;
             m_company = PlayerSettings.companyName;
             string new_name = App.kAppDisplayName;
-            string new_identifier = App.kGuiBuildAndroidApplicationIdentifier;
+            string new_identifier = Build.kGuiBuildAndroidApplicationIdentifier;
             if (!String.IsNullOrEmpty(Description))
             {
                 new_name += " (" + Description + ")";
@@ -955,7 +955,7 @@ static class BuildTiltBrush
                 PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, new_identifier);
             }
             PlayerSettings.productName = new_name;
-            PlayerSettings.companyName = App.kDisplayVendorName;
+            PlayerSettings.companyName = Build.kDisplayVendorName;
         }
 
         public void Dispose()
