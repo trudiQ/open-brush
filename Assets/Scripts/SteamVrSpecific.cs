@@ -69,6 +69,25 @@ namespace TiltBrush
             m_SteamVROverlay.transform.position = vOverlayPosition;
             m_SteamVROverlay.transform.forward = vOverlayDirection;
         }
+
+        public override void PauseRendering(bool pause)
+        {
+            SteamVR_Render.pauseRendering = pause;
+        }
+
+        protected override void FadeToCompositor(float fadeTime, bool fadeToCompositor)
+        {
+            SteamVR rVR = SteamVR.instance;
+            if (rVR != null && rVR.compositor != null)
+            {
+                rVR.compositor.FadeGrid(fadeTime, fadeToCompositor);
+            }
+        }
+
+        protected override void FadeBlack(float fadeTime, bool fadeToBlack)
+        {
+            SteamVR_Fade.Start(fadeToBlack ? Color.black : Color.clear, fadeTime);
+        }
     }
 
 }

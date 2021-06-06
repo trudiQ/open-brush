@@ -71,7 +71,6 @@ namespace TiltBrush
 
     public abstract class Sdk
     {
-        
     }
 
     public abstract class Device
@@ -90,6 +89,39 @@ namespace TiltBrush
         public virtual void SetTexture(Texture tex) { }
         public virtual void SetAlpha(float ratio) { }
         public virtual void SetPosition(float distance, float height) { }
+        
+        // Overlay Methods
+        // (These should only be accessed via OverlayManager.)
+
+        public virtual void PauseRendering(bool pause) { }
+
+        // Fades to the compositor world (if available) or black.
+        public void FadeToCompositor(float fadeTime)
+        {
+            FadeToCompositor(fadeTime, fadeToCompositor: true);
+        }
+
+        // Fades from the compositor world (if available) or black.
+        public void FadeFromCompositor(float fadeTime)
+        {
+            FadeToCompositor(fadeTime, fadeToCompositor: false);
+        }
+
+        protected virtual void FadeToCompositor(float fadeTime, bool fadeToCompositor) { }
+        
+        // Fades to solid black.
+        public void FadeToBlack(float fadeTime)
+        {
+            FadeBlack(fadeTime, fadeToBlack: true);
+        }
+
+        // Fade from solid black.
+        public void FadeFromBlack(float fadeTime)
+        {
+            FadeBlack(fadeTime, fadeToBlack: false);
+        }
+
+        protected virtual void FadeBlack(float fadeTime, bool fadeToBlack) { }
     }
     
     public class MobileOverlay : Overlay
@@ -192,11 +224,8 @@ namespace TiltBrush
         [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
         [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
 #if OCULUS_SUPPORTED
-        private OVROverlay m_OVROverlay;
+        //private OVROverlay m_OVROverlay;
 #endif // OCULUS_SUPPORTED
-
-        // Overlay types
-        private OverlaySdk m_overlaySdk = OverlaySdk.None;
 
         // VR  Data and Prefabs for specific VR systems
         [SerializeField] private GameObject m_VrSystem;
@@ -235,14 +264,6 @@ namespace TiltBrush
 
         private bool m_NeedsToAttachConsoleScript;
         private TrTransform? m_TrackingBackupXf;
-
-        private enum OverlaySdk
-        {
-            None,
-            Steam,
-            OVR,
-            Mobile
-        }
 
         // Degrees of Freedom.
         public enum DoF
@@ -284,18 +305,15 @@ namespace TiltBrush
         {
             if (App.Config.IsMobileHardware && m_MobileOverlayPrefab != null)
             {
-                m_overlaySdk = OverlaySdk.Mobile;
                 m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
             }
             else if (App.Config.m_SdkMode == SdkMode.SteamVR && m_SteamVROverlay != null)
             {
-                m_overlaySdk = OverlaySdk.Steam;
                 m_overlay = new SteamOverlay(m_SteamVROverlay);
             }
 #if OCULUS_SUPPORTED
             else if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
-                m_overlaySdk = OverlaySdk.OVR;
                 m_overlay = new OculusOverlay(m_VrSystem);
             }
 #endif // OCULUS_SUPPORTED
@@ -944,91 +962,6 @@ namespace TiltBrush
 
                 default:
                     return DoF.None;
-            }
-        }
-
-        // -------------------------------------------------------------------------------------------- //
-        // Overlay Methods
-        // (These should only be accessed via OverlayManager.)
-        // -------------------------------------------------------------------------------------------- //
-        
-        // Fades to the compositor world (if available) or black.
-        public void FadeToCompositor(float fadeTime)
-        {
-            FadeToCompositor(fadeTime, fadeToCompositor: true);
-        }
-
-        // Fades from the compositor world (if available) or black.
-        public void FadeFromCompositor(float fadeTime)
-        {
-            FadeToCompositor(fadeTime, fadeToCompositor: false);
-        }
-
-        private void FadeToCompositor(float fadeTime, bool fadeToCompositor)
-        {
-            switch (m_overlaySdk)
-            {
-                case OverlaySdk.Steam:
-                    SteamVR rVR = SteamVR.instance;
-                    if (rVR != null && rVR.compositor != null)
-                    {
-                        rVR.compositor.FadeGrid(fadeTime, fadeToCompositor);
-                    }
-                    break;
-                case OverlaySdk.OVR:
-                    FadeBlack(fadeTime, fadeToCompositor);
-                    break;
-            }
-        }
-
-        public void PauseRendering(bool bPause)
-        {
-            switch (m_overlaySdk)
-            {
-                case OverlaySdk.Steam:
-                    SteamVR_Render.pauseRendering = bPause;
-                    break;
-                case OverlaySdk.OVR:
-                    // :(
-                    break;
-            }
-        }
-
-        // Fades to solid black.
-        public void FadeToBlack(float fadeTime)
-        {
-            FadeBlack(fadeTime, fadeToBlack: true);
-        }
-
-        // Fade from solid black.
-        public void FadeFromBlack(float fadeTime)
-        {
-            FadeBlack(fadeTime, fadeToBlack: false);
-        }
-
-        private void FadeBlack(float fadeTime, bool fadeToBlack)
-        {
-            switch (App.Config.m_SdkMode)
-            {
-                case SdkMode.SteamVR:
-                    SteamVR_Fade.Start(fadeToBlack ? Color.black : Color.clear, fadeTime);
-                    break;
-                case SdkMode.Oculus:
-                    // TODO: using Viewpoint here is pretty gross, dependencies should not go from VrSdk
-                    // to other Tilt Brush components.
-
-                    // Currently ViewpointScript.FadeToColor takes 1/time as a parameter, which we should fix to
-                    // make consistent, but for now just convert the incoming parameter.
-                    float speed = 1 / Mathf.Max(fadeTime, 0.00001f);
-                    if (fadeToBlack)
-                    {
-                        ViewpointScript.m_Instance.FadeToColor(Color.black, speed);
-                    }
-                    else
-                    {
-                        ViewpointScript.m_Instance.FadeToScene(speed);
-                    }
-                    break;
             }
         }
 

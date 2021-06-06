@@ -19,80 +19,96 @@ using NodeState = UnityEngine.XR.XRNodeState;
 #if OCULUS_SUPPORTED
 namespace TiltBrush
 {
-        public class OculusOverlay : Overlay
+    public class OculusOverlay : Overlay
+    {
+        private OVROverlay m_OVROverlay;
+        private GameObject m_VrSystem;
+
+        public override bool Enabled
         {
-    #if OCULUS_SUPPORTED
-            private OVROverlay m_OVROverlay;
-    #endif
-            private GameObject m_VrSystem;
-    
-            public override bool Enabled
+            get
             {
-                get
-                {
-    #if OCULUS_SUPPORTED
-                    return m_OVROverlay.enabled;
-    #else
-                    return false;
-    #endif // OCULUS_SUPPORTED
-                }
-                set
-                {
-    #if OCULUS_SUPPORTED
-                    m_OVROverlay.enabled = value;
-    #endif // OCULUS_SUPPORTED
-                }
+                return m_OVROverlay.enabled;
             }
-    
-            public OculusOverlay(GameObject vrsys)
+            set
             {
-                m_VrSystem = vrsys;
-            }
-    
-            public override void Initialise()
-            {
-    #if OCULUS_SUPPORTED
-                var gobj = new GameObject("Oculus Overlay");
-                gobj.transform.SetParent(m_VrSystem.transform, worldPositionStays: false);
-                m_OVROverlay = gobj.AddComponent<OVROverlay>();
-                m_OVROverlay.isDynamic = true;
-                m_OVROverlay.compositionDepth = 0;
-                m_OVROverlay.currentOverlayType = OVROverlay.OverlayType.Overlay;
-                m_OVROverlay.currentOverlayShape = OVROverlay.OverlayShape.Quad;
-                m_OVROverlay.noDepthBufferTesting = true;
-                m_OVROverlay.enabled = false;
-    #endif
-            }
-    
-            public override void SetTexture(Texture tex)
-            {
-    #if OCULUS_SUPPORTED
-                m_OVROverlay.textures = new[] { tex };
-    #endif // OCULUS_SUPPORTED
-            }
-    
-            public override void SetAlpha(float ratio)
-            {
-                Enabled = ratio == 1.0f;
-            }
-         
-            public override void SetPosition(float distance, float height)
-            {
-    #if OCULUS_SUPPORTED
-                // place overlay in front of the player a distance out
-                Vector3 vOverlayPosition = ViewpointScript.Head.position;
-                Vector3 vOverlayDirection = ViewpointScript.Head.forward;
-                vOverlayDirection.y = 0.0f;
-                vOverlayDirection.Normalize();
-    
-                vOverlayPosition += (vOverlayDirection * distance / 10);
-                m_OVROverlay.transform.position = vOverlayPosition;
-                m_OVROverlay.transform.forward = vOverlayDirection;
-    #endif // OCULUS_SUPPORTED
+                m_OVROverlay.enabled = value;
             }
         }
 
-    public class OculusMRCCameraUpdate : MonoBehaviour
+        public OculusOverlay(GameObject vrsys)
+        {
+            m_VrSystem = vrsys;
+        }
+
+        public override void Initialise()
+        {
+            var gobj = new GameObject("Oculus Overlay");
+            gobj.transform.SetParent(m_VrSystem.transform, worldPositionStays: false);
+            m_OVROverlay = gobj.AddComponent<OVROverlay>();
+            m_OVROverlay.isDynamic = true;
+            m_OVROverlay.compositionDepth = 0;
+            m_OVROverlay.currentOverlayType = OVROverlay.OverlayType.Overlay;
+            m_OVROverlay.currentOverlayShape = OVROverlay.OverlayShape.Quad;
+            m_OVROverlay.noDepthBufferTesting = true;
+            m_OVROverlay.enabled = false;
+        }
+
+        public override void SetTexture(Texture tex)
+        {
+            m_OVROverlay.textures = new[] { tex };
+        }
+
+        public override void SetAlpha(float ratio)
+        {
+            Enabled = ratio == 1.0f;
+        }
+
+        public override void SetPosition(float distance, float height)
+        {
+            // place overlay in front of the player a distance out
+            Vector3 vOverlayPosition = ViewpointScript.Head.position;
+            Vector3 vOverlayDirection = ViewpointScript.Head.forward;
+            vOverlayDirection.y = 0.0f;
+            vOverlayDirection.Normalize();
+
+            vOverlayPosition += (vOverlayDirection * distance / 10);
+            m_OVROverlay.transform.position = vOverlayPosition;
+            m_OVROverlay.transform.forward = vOverlayDirection;
+        }
+        
+        public override void PauseRendering(bool bPause)
+        {
+            // :(
+        }
+
+        protected override void FadeToCompositor(float fadeTime, bool fadeToCompositor)
+        {
+            FadeBlack(fadeTime, fadeToCompositor);
+        }
+                
+
+        protected override void FadeBlack(float fadeTime, bool fadeToBlack)
+        {
+            // TODO: using Viewpoint here is pretty gross, dependencies should not go from VrSdk
+            // to other Tilt Brush components.
+
+            // Currently ViewpointScript.FadeToColor takes 1/time as a parameter, which we should fix to
+            // make consistent, but for now just convert the incoming parameter.
+            float speed = 1 / Mathf.Max(fadeTime, 0.00001f);
+            if (fadeToBlack)
+            {
+                ViewpointScript.m_Instance.FadeToColor(Color.black, speed);
+            }
+            else
+            {
+                ViewpointScript.m_Instance.FadeToScene(speed);
+            }
+        }
+    }
+
+
+public class OculusMRCCameraUpdate : MonoBehaviour
     {
         private OVRPose? calibratedCameraPose = null;
 

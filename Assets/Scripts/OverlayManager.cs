@@ -219,7 +219,7 @@ namespace TiltBrush
             bool routineInterrupted = true;
             try
             {
-                App.VrSdk.FadeToCompositor(fadeDuration);
+                App.VrSdk.Overlay.FadeToCompositor(fadeDuration);
                 // You can't rely on the SteamVR compositor fade being totally over in the time
                 // you specified. You also can't rely on being able to get a sensible value for the fade
                 // alpha, so you can't reliably wait for it to be done.
@@ -233,7 +233,7 @@ namespace TiltBrush
 
                 // Wait one additional frame for any transitions to complete (e.g. fade to black).
                 SetOverlayTransitionRatio(1.0f);
-                App.VrSdk.PauseRendering(true);
+                App.VrSdk.Overlay.PauseRendering(true);
                 yield return null;
 
                 try
@@ -271,8 +271,8 @@ namespace TiltBrush
                     }
                 }
 
-                App.VrSdk.PauseRendering(false);
-                App.VrSdk.FadeFromCompositor(fadeDuration);
+                App.VrSdk.Overlay.PauseRendering(false);
+                App.VrSdk.Overlay.FadeFromCompositor(fadeDuration);
                 for (float t = 1; t > 0; t -= Time.deltaTime / fadeDuration)
                 {
                     SetOverlayTransitionRatio(Mathf.Clamp01(t));
@@ -286,8 +286,8 @@ namespace TiltBrush
                 if (routineInterrupted)
                 {
                     // If the coroutine was interrupted, clean up our compositor fade.
-                    App.VrSdk.PauseRendering(false);
-                    App.VrSdk.FadeFromCompositor(0.0f);
+                    App.VrSdk.Overlay.PauseRendering(false);
+                    App.VrSdk.Overlay.FadeFromCompositor(0.0f);
                     SetOverlayTransitionRatio(0.0f);
                 }
             }
@@ -297,8 +297,8 @@ namespace TiltBrush
         // to account for SteamVR latency.
         private async Task FadeCompositorAndOverlayAsync(float start, float end, float duration)
         {
-            if (end > start) { App.VrSdk.FadeToCompositor(duration); }
-            else { App.VrSdk.FadeFromCompositor(duration); }
+            if (end > start) { App.VrSdk.Overlay.FadeToCompositor(duration); }
+            else { App.VrSdk.Overlay.FadeFromCompositor(duration); }
 
             for (float elapsed = 0; elapsed < duration; elapsed += Time.deltaTime)
             {
@@ -336,7 +336,7 @@ namespace TiltBrush
                 // need to, by passing slightly-too-wide bounds.
                 await FadeCompositorAndOverlayAsync(0, 1.1f, fadeDuration);
                 // Wait one additional frame for any transitions to complete (e.g. fade to black).
-                App.VrSdk.PauseRendering(true);
+                App.VrSdk.Overlay.PauseRendering(true);
                 await Awaiters.NextFrame;
 
                 Task<T> inner = taskCreator(m_progress);
@@ -355,14 +355,14 @@ namespace TiltBrush
                     await Awaiters.Seconds(1f);
                 }
 
-                App.VrSdk.PauseRendering(false);
+                App.VrSdk.Overlay.PauseRendering(false);
                 await FadeCompositorAndOverlayAsync(1, 0, fadeDuration);
                 return inner.Result;
             }
             catch (Exception)
             {
-                App.VrSdk.PauseRendering(false);
-                App.VrSdk.FadeFromCompositor(0);
+                App.VrSdk.Overlay.PauseRendering(false);
+                App.VrSdk.Overlay.FadeFromCompositor(0);
                 SetOverlayTransitionRatio(0);
                 throw;
             }
@@ -392,7 +392,7 @@ namespace TiltBrush
                 // need to, by passing slightly-too-wide bounds.
                 await FadeCompositorAndOverlayAsync(0, 1.1f, fadeDuration);
                 // Wait one additional frame for any transitions to complete (e.g. fade to black).
-                App.VrSdk.PauseRendering(true);
+                App.VrSdk.Overlay.PauseRendering(true);
                 Progress.Report(0.25);
                 await Awaiters.NextFrame;
 
@@ -413,14 +413,14 @@ namespace TiltBrush
                     await Awaiters.Seconds(1f);
                 }
 
-                App.VrSdk.PauseRendering(false);
+                App.VrSdk.Overlay.PauseRendering(false);
                 await FadeCompositorAndOverlayAsync(1, 0, fadeDuration);
                 return result;
             }
             catch (Exception)
             {
-                App.VrSdk.PauseRendering(false);
-                App.VrSdk.FadeFromCompositor(0);
+                App.VrSdk.Overlay.PauseRendering(false);
+                App.VrSdk.Overlay.FadeFromCompositor(0);
                 SetOverlayTransitionRatio(0);
                 throw;
             }
