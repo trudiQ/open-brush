@@ -1290,8 +1290,8 @@ namespace TiltBrush
             //if we just released the button, kick a fade out
             if (m_QuickLoadInputWasValid)
             {
-                App.VrSdk.PauseRendering(false);
-                App.VrSdk.FadeFromCompositor(0);
+                App.VrSdk.Overlay.PauseRendering(false);
+                App.VrSdk.Overlay.FadeFromCompositor(0);
             }
 
             m_DesiredAppState = AppState.Standard;
@@ -1599,17 +1599,15 @@ namespace TiltBrush
                         {
                             // b/69060780: This workaround is due to the ViewpointScript.Update() also messing
                             // with the overlay fade, and causing state conflicts in OVR.
-                            
-                            //if (!App.VrSdk.OverlayIsOVR || ViewpointScript.m_Instance.AllowsFading)
                             if (!(App.VrSdk.Overlay is OculusOverlay)  || ViewpointScript.m_Instance.AllowsFading)
                             {
-                                App.VrSdk.FadeToCompositor(0);
+                                App.VrSdk.Overlay.FadeToCompositor(0);
                             }
                             else
                             {
                                 ViewpointScript.m_Instance.SetOverlayToBlack();
                             }
-                            App.VrSdk.PauseRendering(true);
+                            App.VrSdk.Overlay.PauseRendering(true);
                             InputManager.m_Instance.TriggerHaptics(InputManager.ControllerName.Wand, 0.05f);
                         }
 
@@ -1628,8 +1626,8 @@ namespace TiltBrush
                         //if we just released the button, kick a fade out
                         if (m_QuickLoadInputWasValid)
                         {
-                            App.VrSdk.PauseRendering(false);
-                            App.VrSdk.FadeFromCompositor(0);
+                            App.VrSdk.Overlay.PauseRendering(false);
+                            App.VrSdk.Overlay.FadeFromCompositor(0);
                         }
                         m_QuickLoadInputWasValid = false;
                     }
