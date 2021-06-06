@@ -11,17 +11,278 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+//#define OLD_OVERLAY
+#define NEW_OVERLAY
+
 using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Valve.VR;
 #if !OCULUS_SUPPORTED
 using OVROverlay = UnityEngine.MonoBehaviour;
 #endif // !OCULUS_SUPPORTED
 
+
 namespace TiltBrush
 {
+    //   - Distribution
+    //       - Build
+    //           - SDK
+    //           * Platform - Win32/64, Android, iOS.
+    //           * Options
+    //                * Experimental
+    //           * Config
+    //               * Develop
+    //               * Profile
+    //               * Release
+    //       - Device
+    //           - Overlay
+    //           - Controller
+
+    // All of the details required to build for a distribution.
+    //  - We may want to specialise things like store or analytics features.
+    public abstract class Distribution
+    {
+        public Build Build;
+        public Sdk Sdk;
+    }
+
+    public abstract class Build
+    {
+        // The vendor name - used for naming android builds - shouldn't have spaces.
+        public const string kVendorName = "Icosa";
+        // The vendor name - used for the company name in builds and fbx output. Can have spaces.
+        public const string kDisplayVendorName = "Icosa";
+
+        // Executable Base
+        public const string kGuiBuildExecutableName = "OpenBrush";
+        // Windows Executable
+        public const string kGuiBuildWindowsExecutableName = kGuiBuildExecutableName + ".exe";
+        // Linux Executable
+        public const string kGuiBuildLinuxExecutableName = kGuiBuildExecutableName;
+        // OSX Executable
+        public const string kGuiBuildOSXExecutableName = kGuiBuildExecutableName + ".app";
+        // Android Application Identifier
+        public const string kGuiBuildAndroidApplicationIdentifier = "com." + kVendorName + "." + kGuiBuildExecutableName;
+        // Android Executable
+        public const string kGuiBuildAndroidExecutableName = kGuiBuildAndroidApplicationIdentifier + ".apk";
+   
+    }
+
+    public abstract class Sdk
+    {
+        
+    }
+
+    public abstract class Device
+    {
+        private Overlay m_overlay;
+        private List<Controller> m_controllers = new List<Controller>();
+    }
+
+    //
+    public abstract class Overlay
+    {
+        public abstract bool Enabled { get; set; } 
+        
+        public abstract void Initialise();
+
+        public virtual void SetTexture(Texture tex) { }
+        public virtual void SetAlpha(float ratio) { }
+        public virtual void SetPosition(float distance, float height) { }
+    }
+
+    // [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
+    public class SteamOverlay : Overlay
+    {
+        private SteamVR_Overlay m_SteamVROverlay;
+        
+        [SerializeField] private float m_OverlayMaxAlpha = 1.0f;
+        [SerializeField] private float m_OverlayMaxSize = 8;
+
+        public override bool Enabled
+        {
+            get
+            {
+                return m_SteamVROverlay.gameObject.activeSelf;
+            }
+            set
+            {
+                m_SteamVROverlay.gameObject.SetActive(value);
+            }
+        }
+
+        public SteamOverlay(SteamVR_Overlay so)
+        {
+            m_SteamVROverlay = so;
+        }
+        
+        public override void Initialise()
+        {}
+
+        public override void SetTexture(Texture tex)
+        {
+            m_SteamVROverlay.texture = tex;
+            m_SteamVROverlay.UpdateOverlay();
+        }
+
+        public override void SetAlpha(float ratio)
+        {
+            m_SteamVROverlay.alpha = ratio * m_OverlayMaxAlpha;
+            Enabled = ratio > 0.0f;
+        }
+
+        public override void SetPosition(float distance, float height)
+        {
+            // place overlay in front of the player a distance out
+            Vector3 vOverlayPosition = ViewpointScript.Head.position;
+            Vector3 vOverlayDirection = ViewpointScript.Head.forward;
+            vOverlayDirection.y = 0.0f;
+            vOverlayDirection.Normalize();
+
+            vOverlayPosition += (vOverlayDirection * distance);
+            vOverlayPosition.y = height;
+            m_SteamVROverlay.transform.position = vOverlayPosition;
+            m_SteamVROverlay.transform.forward = vOverlayDirection;
+        }
+    }
+    
+    public class OculusOverlay : Overlay
+    {
+#if OCULUS_SUPPORTED
+        private OVROverlay m_OVROverlay;
+#endif
+        private GameObject m_VrSystem;
+
+        public override bool Enabled
+        {
+            get
+            {
+#if OCULUS_SUPPORTED
+                return m_OVROverlay.enabled;
+#else
+                return false;
+#endif // OCULUS_SUPPORTED
+            }
+            set
+            {
+#if OCULUS_SUPPORTED
+                m_OVROverlay.enabled = value;
+#endif // OCULUS_SUPPORTED
+            }
+        }
+
+        public OculusOverlay(GameObject vrsys)
+        {
+            m_VrSystem = vrsys;
+        }
+
+        public override void Initialise()
+        {
+#if OCULUS_SUPPORTED
+            var gobj = new GameObject("Oculus Overlay");
+            gobj.transform.SetParent(m_VrSystem.transform, worldPositionStays: false);
+            m_OVROverlay = gobj.AddComponent<OVROverlay>();
+            m_OVROverlay.isDynamic = true;
+            m_OVROverlay.compositionDepth = 0;
+            m_OVROverlay.currentOverlayType = OVROverlay.OverlayType.Overlay;
+            m_OVROverlay.currentOverlayShape = OVROverlay.OverlayShape.Quad;
+            m_OVROverlay.noDepthBufferTesting = true;
+            m_OVROverlay.enabled = false;
+#endif
+        }
+
+        public override void SetTexture(Texture tex)
+        {
+#if OCULUS_SUPPORTED
+            m_OVROverlay.textures = new[] { tex };
+#endif // OCULUS_SUPPORTED
+        }
+
+        public void SetOverlayAlpha(float ratio)
+        {
+            Enabled = ratio == 1.0f;
+        }
+     
+        public override void SetPosition(float distance, float height)
+        {
+#if OCULUS_SUPPORTED
+            // place overlay in front of the player a distance out
+            Vector3 vOverlayPosition = ViewpointScript.Head.position;
+            Vector3 vOverlayDirection = ViewpointScript.Head.forward;
+            vOverlayDirection.y = 0.0f;
+            vOverlayDirection.Normalize();
+
+            vOverlayPosition += (vOverlayDirection * distance / 10);
+            m_OVROverlay.transform.position = vOverlayPosition;
+            m_OVROverlay.transform.forward = vOverlayDirection;
+#endif // OCULUS_SUPPORTED
+        }
+
+    }
+
+    public class MobileOverlay : Overlay
+    {
+        [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
+        private SimpleOverlay m_overlayInstance;
+        private bool m_enabled = false;
+        private Camera m_VrCamera;
+
+        public override bool Enabled
+        {
+            get { return m_enabled; }
+            set { m_enabled = value; }
+        }
+
+        public MobileOverlay(SimpleOverlay prefab, Camera cam)
+        {
+            m_MobileOverlayPrefab = prefab;
+            m_VrCamera = cam;
+        }
+            
+        public override void Initialise()
+        {
+            m_overlayInstance = GameObject.Instantiate(m_MobileOverlayPrefab);
+            m_overlayInstance.gameObject.SetActive(false);
+        }
+
+        public void SetOverlayAlpha(float ratio)
+        {
+            if (!Enabled && ratio > 0.0f)
+            {
+                // Position screen overlay in front of the camera.
+                m_overlayInstance.transform.parent = m_VrCamera.transform;
+                m_overlayInstance.transform.localPosition = Vector3.zero;
+                m_overlayInstance.transform.localRotation = Quaternion.identity;
+                float scale = 0.5f * m_VrCamera.farClipPlane / m_VrCamera.transform.lossyScale.z;
+                m_overlayInstance.transform.localScale = Vector3.one * scale;
+
+                // Reparent the overlay so that it doesn't move with the headset.
+                m_overlayInstance.transform.parent = null;
+
+                // Reset the rotation so that it's level and centered on the horizon.
+                Vector3 eulerAngles = m_overlayInstance.transform.localRotation.eulerAngles;
+                m_overlayInstance.transform.localRotation = Quaternion.Euler(new Vector3(0, eulerAngles.y, 0));
+
+                m_overlayInstance.gameObject.SetActive(true);
+                Enabled = true;
+            }
+            else if (Enabled && ratio == 0.0f)
+            {
+                m_overlayInstance.gameObject.SetActive(false);
+                Enabled = false;
+            }
+        }
+    }
+
+    public abstract class Controller
+    {
+        
+    }
+
 
     // If these names are used in analytics etc, they must be protected from obfuscation.
     // Do not change the names of any of them, unless they've never been released.
@@ -55,10 +316,29 @@ namespace TiltBrush
     public class VrSdk : MonoBehaviour
     {
         [SerializeField] private float m_AnalogGripBinaryThreshold_Rift;
+
+        private Overlay m_overlay; // new overlay
+        public Overlay Overlay { get => m_overlay; }
+
+        // TODO: Move to the overlay implementations. 
+        [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
         [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
-        [SerializeField] private DefaultOverlay m_MobileOverlayPrefab;
+#if OCULUS_SUPPORTED
+        private OVROverlay m_OVROverlay;
+#endif // OCULUS_SUPPORTED
+
+        // Overlay types
+        private OverlaySdk m_overlaySdk = OverlaySdk.None;
+#if OLD_OVERLAY
+        private bool m_MobileOverlayOn;
+        private SimpleOverlay m_MobileOverlay;
+
         [SerializeField] private float m_OverlayMaxAlpha = 1.0f;
         [SerializeField] private float m_OverlayMaxSize = 8;
+        
+        public bool OverlayIsOVR { get { return m_overlaySdk == OverlaySdk.OVR; } }
+
+#endif // OLD_OVERLAY
 
         // VR  Data and Prefabs for specific VR systems
         [SerializeField] private GameObject m_VrSystem;
@@ -87,16 +367,6 @@ namespace TiltBrush
         public VrControllers VrControls { get { return m_VrControls; } }
 
         private bool m_HasVrFocus = true;
-        private OverlayMode m_OverlayMode;
-
-        // Oculus Overlay
-#if OCULUS_SUPPORTED
-        private OVROverlay m_OVROverlay;
-#endif // OCULUS_SUPPORTED
-
-        // Mobile Overlay
-        private bool m_MobileOverlayOn;
-        private DefaultOverlay m_MobileOverlay;
 
         private Bounds? m_RoomBoundsAabbCached;
 
@@ -108,7 +378,7 @@ namespace TiltBrush
         private bool m_NeedsToAttachConsoleScript;
         private TrTransform? m_TrackingBackupXf;
 
-        private enum OverlayMode
+        private enum OverlaySdk
         {
             None,
             Steam,
@@ -139,9 +409,7 @@ namespace TiltBrush
         {
             get { return m_AnalogGripBinaryThreshold_Rift; }
         }
-
-        public bool OverlayIsOVR { get { return m_OverlayMode == OverlayMode.OVR; } }
-
+        
         public bool IsInitializingSteamVr
         {
             get
@@ -158,18 +426,27 @@ namespace TiltBrush
         {
             if (App.Config.IsMobileHardware && m_MobileOverlayPrefab != null)
             {
-                m_OverlayMode = OverlayMode.Mobile;
+                m_overlaySdk = OverlaySdk.Mobile;
+#if OLD_OVERLAY
                 m_MobileOverlay = Instantiate(m_MobileOverlayPrefab);
                 m_MobileOverlay.gameObject.SetActive(false);
+#endif
+#if NEW_OVERLAY
+                m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
+#endif
             }
             else if (App.Config.m_SdkMode == SdkMode.SteamVR && m_SteamVROverlay != null)
             {
-                m_OverlayMode = OverlayMode.Steam;
+                m_overlaySdk = OverlaySdk.Steam;
+                #if NEW_OVERLAY
+                m_overlay = new SteamOverlay(m_SteamVROverlay);
+                #endif
             }
 #if OCULUS_SUPPORTED
             else if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
-                m_OverlayMode = OverlayMode.OVR;
+                m_overlaySdk = OverlaySdk.OVR;
+#if OLD_OVERLAY 
                 var gobj = new GameObject("Oculus Overlay");
                 gobj.transform.SetParent(m_VrSystem.transform, worldPositionStays: false);
                 m_OVROverlay = gobj.AddComponent<OVROverlay>();
@@ -179,14 +456,17 @@ namespace TiltBrush
                 m_OVROverlay.currentOverlayShape = OVROverlay.OverlayShape.Quad;
                 m_OVROverlay.noDepthBufferTesting = true;
                 m_OVROverlay.enabled = false;
+#endif
+
+#if NEW_OVERLAY
+                m_overlay = new OculusOverlay(m_VrSystem);
+#endif
             }
 #endif // OCULUS_SUPPORTED
+            
+            m_overlay?.Initialise();
 
             // TODO-XR - Set the per platform info
-
-            // if (App.Config.m_SdkMode == SdkMode.UnityXr)
-            // {
-            // }
 
             if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
@@ -251,12 +531,12 @@ namespace TiltBrush
                 m_VrControls.gameObject.transform.localPosition = pos;
 
 #if UNITY_EDITOR && false
-      // Instant preview
-      m_VrCamera.gameObject.AddComponent<InstantPreviewHelper>();
-      var ip = m_VrCamera.gameObject.AddComponent<Gvr.Internal.InstantPreview>();
-      ip.OutputResolution = Gvr.Internal.InstantPreview.Resolutions.Big;
-      ip.MultisampleCount = Gvr.Internal.InstantPreview.MultisampleCounts.One;
-      ip.BitRate = Gvr.Internal.InstantPreview.BitRates._16000;
+                // Instant preview
+                m_VrCamera.gameObject.AddComponent<InstantPreviewHelper>();
+                var ip = m_VrCamera.gameObject.AddComponent<Gvr.Internal.InstantPreview>();
+                ip.OutputResolution = Gvr.Internal.InstantPreview.Resolutions.Big;
+                ip.MultisampleCount = Gvr.Internal.InstantPreview.MultisampleCounts.One;
+                ip.BitRate = Gvr.Internal.InstantPreview.BitRates._16000;
 #endif
 
                 // Custom controls parenting for GVR.
@@ -279,7 +559,7 @@ namespace TiltBrush
                 // ---------------------------------------------------------------------------------------- //
                 SetControllerStyle(TiltBrush.ControllerStyle.None);
                 // Offset for head position, since camera height is set by the VR system.
-                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f); // TODO-XR - won't need this. 
+                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f); 
             }
             m_VrCamera.gameObject.SetActive(true);
             m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf); 
@@ -837,16 +1117,17 @@ namespace TiltBrush
         // -------------------------------------------------------------------------------------------- //
         public void SetOverlayAlpha(float ratio)
         {
-            switch (m_OverlayMode)
+#if OLD_OVERLAY
+            switch (m_overlaySdk)
             {
-                case OverlayMode.Steam:
+                case OverlaySdk.Steam:
                     m_SteamVROverlay.alpha = ratio * m_OverlayMaxAlpha;
                     OverlayEnabled = ratio > 0.0f;
                     break;
-                case OverlayMode.OVR:
+                case OverlaySdk.OVR:
                     OverlayEnabled = ratio == 1;
                     break;
-                case OverlayMode.Mobile:
+                case OverlaySdk.Mobile:
                     if (!OverlayEnabled && ratio > 0.0f)
                     {
                         // Position screen overlay in front of the camera.
@@ -873,80 +1154,96 @@ namespace TiltBrush
                     }
                     break;
             }
+#else
+            m_overlay.SetAlpha(ratio);
+#endif
         }
 
         public bool OverlayEnabled
         {
             get
             {
-                switch (m_OverlayMode)
+                #if OLD_OVERLAY
+                switch (m_overlaySdk)
                 {
-                    case OverlayMode.Steam:
+                    case OverlaySdk.Steam:
                         return m_SteamVROverlay.gameObject.activeSelf;
-                    case OverlayMode.OVR:
+                    case OverlaySdk.OVR:
 #if OCULUS_SUPPORTED
                         return m_OVROverlay.enabled;
 #else
                         return false;
 #endif // OCULUS_SUPPORTED
-                    case OverlayMode.Mobile:
+                    case OverlaySdk.Mobile:
                         return m_MobileOverlayOn;
                     default:
                         return false;
                 }
+                #else
+                return m_overlay.Enabled;
+                #endif
             }
             set
             {
-                switch (m_OverlayMode)
+# if OLD_OVERLAY
+                switch (m_overlaySdk)
                 {
-                    case OverlayMode.Steam:
+                    case OverlaySdk.Steam:
                         m_SteamVROverlay.gameObject.SetActive(value);
                         break;
-                    case OverlayMode.OVR:
+                    case OverlaySdk.OVR:
 #if OCULUS_SUPPORTED
                         m_OVROverlay.enabled = value;
 #endif // OCULUS_SUPPORTED
                         break;
-                    case OverlayMode.Mobile:
+                    case OverlaySdk.Mobile:
                         m_MobileOverlayOn = value;
                         break;
                 }
+#else
+                m_overlay.Enabled = value;
+#endif
             }
         }
 
         public void SetOverlayTexture(Texture tex)
         {
-            switch (m_OverlayMode)
+#if OLD_OVERLAY
+            switch (m_overlaySdk)
             {
-                case OverlayMode.Steam:
+                case OverlaySdk.Steam:
                     m_SteamVROverlay.texture = tex;
                     m_SteamVROverlay.UpdateOverlay();
                     break;
-                case OverlayMode.OVR:
+                case OverlaySdk.OVR:
 #if OCULUS_SUPPORTED
                     m_OVROverlay.textures = new[] { tex };
 #endif // OCULUS_SUPPORTED
                     break;
             }
+#else            
+            m_overlay.SetTexture(tex);
+#endif
         }
 
         public void PositionOverlay(float distance, float height)
         {
+#if OLD_OVERLAY            
             //place overlay in front of the player a distance out
             Vector3 vOverlayPosition = ViewpointScript.Head.position;
             Vector3 vOverlayDirection = ViewpointScript.Head.forward;
             vOverlayDirection.y = 0.0f;
             vOverlayDirection.Normalize();
 
-            switch (m_OverlayMode)
+            switch (m_overlaySdk)
             {
-                case OverlayMode.Steam:
+                case OverlaySdk.Steam:
                     vOverlayPosition += (vOverlayDirection * distance);
                     vOverlayPosition.y = height;
                     m_SteamVROverlay.transform.position = vOverlayPosition;
                     m_SteamVROverlay.transform.forward = vOverlayDirection;
                     break;
-                case OverlayMode.OVR:
+                case OverlaySdk.OVR:
 #if OCULUS_SUPPORTED
                     vOverlayPosition += (vOverlayDirection * distance / 10);
                     m_OVROverlay.transform.position = vOverlayPosition;
@@ -954,6 +1251,9 @@ namespace TiltBrush
 #endif // OCULUS_SUPPORTED
                     break;
             }
+#else            
+            m_overlay.SetPosition(distance, height);
+#endif
         }
 
         // Fades to the compositor world (if available) or black.
@@ -970,16 +1270,16 @@ namespace TiltBrush
 
         private void FadeToCompositor(float fadeTime, bool fadeToCompositor)
         {
-            switch (m_OverlayMode)
+            switch (m_overlaySdk)
             {
-                case OverlayMode.Steam:
+                case OverlaySdk.Steam:
                     SteamVR rVR = SteamVR.instance;
                     if (rVR != null && rVR.compositor != null)
                     {
                         rVR.compositor.FadeGrid(fadeTime, fadeToCompositor);
                     }
                     break;
-                case OverlayMode.OVR:
+                case OverlaySdk.OVR:
                     FadeBlack(fadeTime, fadeToCompositor);
                     break;
             }
@@ -987,12 +1287,12 @@ namespace TiltBrush
 
         public void PauseRendering(bool bPause)
         {
-            switch (m_OverlayMode)
+            switch (m_overlaySdk)
             {
-                case OverlayMode.Steam:
+                case OverlaySdk.Steam:
                     SteamVR_Render.pauseRendering = bPause;
                     break;
-                case OverlayMode.OVR:
+                case OverlaySdk.OVR:
                     // :(
                     break;
             }

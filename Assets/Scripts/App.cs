@@ -52,10 +52,6 @@ namespace TiltBrush
 
         // This is the name of the app, as displayed to the users running it.
         public const string kAppDisplayName = "Open Brush";
-        // The vendor name - used for naming android builds - shouldn't have spaces.
-        public const string kVendorName = "Icosa";
-        // The vendor name - used for the company name in builds and fbx output. Can have spaces.
-        public const string kDisplayVendorName = "Icosa";
         // This is the App name used when speaking to Google services
         public const string kGoogleServicesAppName = kAppDisplayName;
         // The name of the configuration file. You may want to change this if you think your users may
@@ -66,18 +62,6 @@ namespace TiltBrush
         public const string kAppFolderName = "Open Brush";
         // The data folder used on Google Drive.
         public const string kDriveFolderName = kAppDisplayName;
-        // Executable Base
-        public const string kGuiBuildExecutableName = "OpenBrush";
-        // Windows Executable
-        public const string kGuiBuildWindowsExecutableName = kGuiBuildExecutableName + ".exe";
-        // Linux Executable
-        public const string kGuiBuildLinuxExecutableName = kGuiBuildExecutableName;
-        // OSX Executable
-        public const string kGuiBuildOSXExecutableName = kGuiBuildExecutableName + ".app";
-        // Android Application Identifier
-        public const string kGuiBuildAndroidApplicationIdentifier = "com." + kVendorName + "." + kGuiBuildExecutableName;
-        // Android Executable
-        public const string kGuiBuildAndroidExecutableName = kGuiBuildAndroidApplicationIdentifier + ".apk";
 
         public const string kPlayerPrefHasPlayedBefore = "Has played before";
         public const string kReferenceImagesSeeded = "Reference Images seeded";
@@ -1615,7 +1599,9 @@ namespace TiltBrush
                         {
                             // b/69060780: This workaround is due to the ViewpointScript.Update() also messing
                             // with the overlay fade, and causing state conflicts in OVR.
-                            if (!App.VrSdk.OverlayIsOVR || ViewpointScript.m_Instance.AllowsFading)
+                            
+                            //if (!App.VrSdk.OverlayIsOVR || ViewpointScript.m_Instance.AllowsFading)
+                            if (!(App.VrSdk.Overlay is OculusOverlay)  || ViewpointScript.m_Instance.AllowsFading)
                             {
                                 App.VrSdk.FadeToCompositor(0);
                             }

@@ -20,7 +20,7 @@ namespace TiltBrush
 
     // Simple default overlay.
     //  - Used for mobile devices.
-    public class DefaultOverlay : MonoBehaviour
+    public class SimpleOverlay : MonoBehaviour
     {
         [SerializeField] MeshRenderer m_ProgressIndicator;
         [SerializeField] TextMeshPro m_Message;
