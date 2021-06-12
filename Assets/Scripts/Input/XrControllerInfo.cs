@@ -26,7 +26,7 @@ namespace TiltBrush
         public XrControllerInfo(BaseControllerBehavior behavior, bool isLeftHand) : base(behavior)
         {
         }
-        
+
         public override float GetTriggerRatio()
         {
             return 0;

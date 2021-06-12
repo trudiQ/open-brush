@@ -26,14 +26,14 @@ namespace TiltBrush
     //  - Can be specialised per SDK.
     public abstract class OverlayImplementation
     {
-        public abstract bool Enabled { get; set; } 
-        
+        public abstract bool Enabled { get; set; }
+
         public abstract void Initialise();
 
         public virtual void SetTexture(Texture tex) { }
         public virtual void SetAlpha(float ratio) { }
         public virtual void SetPosition(float distance, float height) { }
-        
+
         // Overlay Methods
         // (These should only be accessed via OverlayManager.)
 
@@ -52,7 +52,7 @@ namespace TiltBrush
         }
 
         protected virtual void FadeToCompositor(float fadeTime, bool fadeToCompositor) { }
-        
+
         // Fades to solid black.
         public void FadeToBlack(float fadeTime)
         {
@@ -86,7 +86,7 @@ namespace TiltBrush
             m_MobileOverlayPrefab = prefab;
             m_VrCamera = cam;
         }
-            
+
         public override void Initialise()
         {
             m_overlayInstance = GameObject.Instantiate(m_MobileOverlayPrefab);
@@ -121,7 +121,7 @@ namespace TiltBrush
             }
         }
     }
-    
+
     public enum OverlayType
     {
         LoadSketch,
@@ -138,7 +138,7 @@ namespace TiltBrush
         Visible,
         Exiting
     }
-    
+
     public class OverlayManager : MonoBehaviour
     {
         public static OverlayManager m_Instance;

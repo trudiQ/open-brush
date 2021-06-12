@@ -63,7 +63,7 @@ namespace TiltBrush
         public const string kGuiBuildAndroidApplicationIdentifier = "com." + kVendorName + "." + kGuiBuildExecutableName;
         // Android Executable
         public const string kGuiBuildAndroidExecutableName = kGuiBuildAndroidApplicationIdentifier + ".apk";
-   
+
     }
 
     public abstract class Sdk
@@ -78,7 +78,7 @@ namespace TiltBrush
 
     public abstract class Controller
     {
-        
+
     }
 
 
@@ -183,7 +183,7 @@ namespace TiltBrush
         {
             get { return m_AnalogGripBinaryThreshold_Rift; }
         }
-        
+
         public bool IsInitializingSteamVr
         {
             get
@@ -212,7 +212,7 @@ namespace TiltBrush
                 m_overlay = new OculusOverlay(m_VrSystem);
             }
 #endif // OCULUS_SUPPORTED
-            
+
             m_overlay?.Initialise();
 
             // TODO-XR - Set the per platform info
@@ -308,10 +308,10 @@ namespace TiltBrush
                 // ---------------------------------------------------------------------------------------- //
                 SetControllerStyle(TiltBrush.ControllerStyle.None);
                 // Offset for head position, since camera height is set by the VR system.
-                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f); 
+                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
             }
             m_VrCamera.gameObject.SetActive(true);
-            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf); 
+            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf);
         }
 
         void Start()
@@ -764,7 +764,7 @@ namespace TiltBrush
             {
                 return new XrControllerInfo(behavior, isLeftHand);
             }
-            
+
             // TODO-XR - Delete old ControllerInfo creators.
             if (App.Config.m_SdkMode == SdkMode.SteamVR)
             {

@@ -20,7 +20,7 @@ namespace TiltBrush
     public class SteamOverlay : OverlayImplementation
     {
         private SteamVR_Overlay m_SteamVROverlay;
-        
+
         [SerializeField] private float m_OverlayMaxAlpha = 1.0f;
         [SerializeField] private float m_OverlayMaxSize = 8;
 
@@ -40,9 +40,9 @@ namespace TiltBrush
         {
             m_SteamVROverlay = so;
         }
-        
+
         public override void Initialise()
-        {}
+        { }
 
         public override void SetTexture(Texture tex)
         {
