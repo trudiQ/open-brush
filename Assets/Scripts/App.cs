@@ -101,55 +101,25 @@ namespace TiltBrush
         private static App m_Instance;
 
         // Accessible at all times after config is initialized.
-        public static Config Config
-        {
-            get { return Config.m_SingletonState; }
-        }
+        public static Config Config => Config.m_SingletonState;
 
-        public static UserConfig UserConfig
-        {
-            get { return m_Instance.m_UserConfig; }
-        }
+        public static UserConfig UserConfig => m_Instance.m_UserConfig;
 
-        public static PlatformConfig PlatformConfig
-        {
-            get { return Config.PlatformConfig; }
-        }
+        public static PlatformConfig PlatformConfig => Config.PlatformConfig;
 
-        public static VrSdk VrSdk
-        {
-            get { return m_Instance.m_VrSdk; }
-        }
+        public static VrSdk VrSdk => m_Instance.m_VrSdk;
 
-        public static SceneScript Scene
-        {
-            get { return m_Instance.m_SceneScript; }
-        }
+        public static SceneScript Scene => m_Instance.m_SceneScript;
 
-        public static CanvasScript ActiveCanvas
-        {
-            get { return Scene.ActiveCanvas; }
-        }
+        public static CanvasScript ActiveCanvas => Scene.ActiveCanvas;
 
-        public static PolyAssetCatalog PolyAssetCatalog
-        {
-            get { return m_Instance.m_PolyAssetCatalog; }
-        }
+        public static PolyAssetCatalog PolyAssetCatalog => m_Instance.m_PolyAssetCatalog;
 
-        public static Switchboard Switchboard
-        {
-            get { return m_Instance.m_Switchboard; }
-        }
+        public static Switchboard Switchboard => m_Instance.m_Switchboard;
 
-        public static BrushColorController BrushColor
-        {
-            get { return m_Instance.m_BrushColorController; }
-        }
+        public static BrushColorController BrushColor => m_Instance.m_BrushColorController;
 
-        public static GroupManager GroupManager
-        {
-            get { return m_Instance.m_GroupManager; }
-        }
+        public static GroupManager GroupManager => m_Instance.m_GroupManager;
 
         public static HttpServer HttpServer => m_Instance.m_HttpServer;
 
@@ -175,13 +145,7 @@ namespace TiltBrush
 #endif
         }
 
-        public static AppState CurrentState
-        {
-            get
-            {
-                return m_Instance == null ? AppState.Loading : m_Instance.m_CurrentAppState;
-            }
-        }
+        public static AppState CurrentState => m_Instance == null ? AppState.Loading : m_Instance.m_CurrentAppState;
 
         public static OAuth2Identity GetIdentity(Cloud cloud)
         {
@@ -222,7 +186,7 @@ namespace TiltBrush
         [SerializeField] private SelectionEffect m_SelectionEffect;
 
         /// The root object for the "Room" coordinate system
-        public Transform m_RoomTransform { get { return transform; } }
+        public Transform m_RoomTransform => transform;
         /// The root object for the "Scene" coordinate system ("/SceneParent")
         public Transform m_SceneTransform;
         /// The root object for the "Canvas" coordinate system ("/SceneParent/Canvas")
@@ -281,7 +245,7 @@ namespace TiltBrush
         private AppState m_DesiredAppState_;
         private AppState m_DesiredAppState
         {
-            get { return m_DesiredAppState_; }
+            get => m_DesiredAppState_;
             set
             {
                 if (m_DesiredAppState_ != value)
@@ -343,27 +307,17 @@ namespace TiltBrush
             }
         }
 
-        public float RoomRadius
-        {
-            get { return m_RoomRadius; }
-        }
+        public float RoomRadius => m_RoomRadius;
 
-        public SelectionEffect SelectionEffect
-        {
-            get { return m_SelectionEffect; }
-        }
-        public bool IsFirstRunExperience { get { return m_FirstRunExperience; } }
-        public bool HasPlayedBefore
-        {
-            get;
-            private set;
-        }
+        public SelectionEffect SelectionEffect => m_SelectionEffect;
+        public bool IsFirstRunExperience => m_FirstRunExperience;
+        public bool HasPlayedBefore { get; private set; }
 
         public bool StartupError { get; set; }
 
         public bool ShowControllers
         {
-            get { return m_ShowControllers.GetValueOrDefault(true); }
+            get => m_ShowControllers.GetValueOrDefault(true);
             set
             {
                 InputManager.m_Instance.ShowControllers(value);
@@ -373,7 +327,7 @@ namespace TiltBrush
 
         public bool AutosaveRestoreFileExists
         {
-            get { return m_AutosaveRestoreFileExists; }
+            get => m_AutosaveRestoreFileExists;
             set
             {
                 if (value != m_AutosaveRestoreFileExists)
@@ -402,10 +356,7 @@ namespace TiltBrush
             }
         }
 
-        public GpuIntersector GpuIntersector
-        {
-            get { return m_GpuIntersector; }
-        }
+        public GpuIntersector GpuIntersector => m_GpuIntersector;
 
         public TrTransform OdsHeadPrimary { get; set; }
         public TrTransform OdsScenePrimary { get; set; }
@@ -413,19 +364,13 @@ namespace TiltBrush
         public TrTransform OdsHeadSecondary { get; set; }
         public TrTransform OdsSceneSecondary { get; set; }
 
-        public FrameCountDisplay FrameCountDisplay
-        {
-            get { return m_FrameCountDisplay; }
-        }
+        public FrameCountDisplay FrameCountDisplay => m_FrameCountDisplay;
 
         // ------------------------------------------------------------
         // Implementation
         // ------------------------------------------------------------
 
-        public bool RequestingAudioReactiveMode
-        {
-            get { return m_RequestingAudioReactiveMode; }
-        }
+        public bool RequestingAudioReactiveMode => m_RequestingAudioReactiveMode;
 
         public void ToggleAudioReactiveModeRequest()
         {
@@ -519,7 +464,7 @@ namespace TiltBrush
         {
             string stamp = Config.m_BuildStamp;
 #if UNITY_ANDROID
-    stamp += string.Format(" code {0}", AndroidUtils.GetVersionCode());
+            stamp += string.Format(" code {0}", AndroidUtils.GetVersionCode());
 #endif
 #if DEBUG
             stamp += string.Format(" platcfg {0}", PlatformConfig.name);

@@ -146,7 +146,7 @@ namespace TiltBrush
         // links to some of these components, but may be out of date for a frame when
         // controllers change.
         private VrControllers m_VrControls;
-        public VrControllers VrControls { get { return m_VrControls; } }
+        public VrControllers VrControls => m_VrControls;
 
         private bool m_HasVrFocus = true;
 
@@ -427,10 +427,7 @@ namespace TiltBrush
         // -------------------------------------------------------------------------------------------- //
 
         // Returns a string representing the user's hardware and SDK configuration.
-        public string GetDisplayIdentifier()
-        {
-            return string.Format("{0}; {1}", App.Config.m_SdkMode, App.Config.VrHardware);
-        }
+        public string DisplayIdentifier => $"{App.Config.m_SdkMode}; {App.Config.VrHardware}";
 
         // Returns the time of the most recent number of dropped frames, null on failure.
         public int? GetDroppedFrames()

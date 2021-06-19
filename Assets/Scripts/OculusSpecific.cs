@@ -26,14 +26,8 @@ namespace TiltBrush
 
         public override bool Enabled
         {
-            get
-            {
-                return m_OVROverlay.enabled;
-            }
-            set
-            {
-                m_OVROverlay.enabled = value;
-            }
+            get => m_OVROverlay.enabled;
+            set => m_OVROverlay.enabled = value;
         }
 
         public OculusOverlay(GameObject vrsys)
