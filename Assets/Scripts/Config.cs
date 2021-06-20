@@ -36,8 +36,9 @@ using UnityEngine.XR;
 namespace TiltBrush
 {
 
-    // These names are used in our analytics, so they must be protected from obfuscation.
-    // Do not change the names of any of them, unless they've never been released.
+    // The sdk mode indicates which SDK (UnityXr, OVR, SteamVR, etc.) that we're using to drive the display.
+    //  - These names are used in our analytics, so they must be protected from obfuscation.
+    //    Do not change the names of any of them, unless they've never been released.
     [Serializable]
     public enum SdkMode
     {
@@ -46,9 +47,16 @@ namespace TiltBrush
         SteamVR,
         Cardboard_Deprecated,
         Monoscopic,
-        Ods,
-        Gvr,
-        UnityXr             // Unity XR plugin system. Replaces individual SDK implementations. 
+        Ods,                // Video rendering
+        Gvr,                // Google VR
+        UnityXr             // Unity XR plugin system. 
+    }
+
+    [Serializable]
+    public enum ControllerMode
+    {
+        Default,            // Whatever the SdkMode default is.
+        XrManagement        // Use Unity XR.
     }
 
     // These names are used in our analytics, so they must be protected from obfuscation.
@@ -58,12 +66,13 @@ namespace TiltBrush
     [Serializable]
     public enum VrHardware
     {
-        Unset,
+        Unset,          // Not set yet.
+        Unsupported,    // We did not recognise the hardware.        
         None,
         Rift,
         Vive,
         Daydream,
-        Wmr,
+        Wmr,            // Windows Mixed Reality
         Quest,
     }
 
@@ -124,6 +133,10 @@ namespace TiltBrush
         // The sdk mode indicates which SDK (UnityXr, OVR, SteamVR, etc.) that we're using to drive the display.
         public SdkMode m_SdkMode;
 
+        [SerializeField]
+        private ControllerMode m_ControllerMode = ControllerMode.Default;
+        public ControllerMode ControllerMode { get => m_ControllerMode; }
+
         // Whether or not to just do an automatic profile and then exit.
         public bool m_AutoProfile;
         // How long to wait before starting to profile.
@@ -151,11 +164,13 @@ namespace TiltBrush
                 if (m_VrHardware == TiltBrush.VrHardware.Unset)
                 {
                     // Decide which hardware we are using by the headset.
+                    // Note: This is update during/after Awake(), so cannot be used reliably until Start().
                     var inputDevices = new List<InputDevice>();
                     InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, inputDevices);
 
                     if (inputDevices.Count > 0)
                     {
+                        m_VrHardware = VrHardware.Unsupported;
                         var device = inputDevices[0];
 
                         if (device.manufacturer == "Oculus")

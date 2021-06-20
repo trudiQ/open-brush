@@ -832,12 +832,6 @@ Camera:
     type: 3}
   m_PrefabInstance: {fileID: 1226230318}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &17776372 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1000014130305538, guid: dedd7823645ca60468aca5f2ff1b9a7f,
-    type: 3}
-  m_PrefabInstance: {fileID: 1226230318}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &19916009
 GameObject:
   m_ObjectHideFlags: 0
@@ -3194,6 +3188,7 @@ MonoBehaviour:
   m_PlatformConfig: {fileID: 11400000, guid: 0764a106823cbec4e8d75b2816f3cbd3, type: 2}
   m_IsExperimental: 1
   m_SdkMode: 0
+  m_ControllerMode: 0
   m_AutoProfile: 0
   m_AutoProfileWaitTime: 10
   Secrets: {fileID: 11400000, guid: 2f5f8e93c6bc7be49a5023148b50e7a0, type: 2}
@@ -8968,9 +8963,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   texture: {fileID: 2800000, guid: 3d15826ebe1cc7f4bbfbb655cce520f7, type: 3}
-  curved: 0
-  antialias: 0
-  highquality: 0
+  curved: 1
+  antialias: 1
+  highquality: 1
   scale: 1
   distance: 0
   alpha: 1
@@ -15140,9 +15135,13 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1671124695}
     m_Modifications:
-    - target: {fileID: 4000011324248280, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
+    - target: {fileID: 1084984122747252, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
       propertyPath: m_RootOrder
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000011324248280, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4000011853176074, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
       propertyPath: m_RootOrder
@@ -15260,6 +15259,16 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 2714757513145884939, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2714757513145884939, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.36144
+      objectReference: {fileID: 0}
     - target: {fileID: 5247196363800516922, guid: dedd7823645ca60468aca5f2ff1b9a7f,
         type: 3}
       propertyPath: m_RootOrder
@@ -15270,6 +15279,16 @@ PrefabInstance:
       propertyPath: mat
       value: 
       objectReference: {fileID: 2100000, guid: a05aca4b32b5fd14aa95311556d3df67, type: 2}
+    - target: {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_TrackingSpace
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_RequestedTrackingMode
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
 --- !u!1 &1251041023
@@ -16063,6 +16082,12 @@ MonoBehaviour:
     type: 2}
   m_MutedAudioMixerGroup: {fileID: 24399788, guid: 529dffbdf735b8545a4cbbab0ce311c6,
     type: 2}
+--- !u!1 &1300080003 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3841090199332894331, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1226230318}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1311996750
 GameObject:
   m_ObjectHideFlags: 0
@@ -17325,7 +17350,7 @@ MonoBehaviour:
   m_MobileOverlayPrefab: {fileID: 114044421867326160, guid: 50a6faaa5f4e1cf4487e55d232fa8d39,
     type: 3}
   m_SteamVROverlay: {fileID: 622233200}
-  m_VrSystem: {fileID: 17776372}
+  m_VrSystem: {fileID: 1300080003}
   m_SteamUninitializedControlsPrefab: {fileID: 1585114503440396, guid: dcbeb61cc5ebbbb4d9727e864c5c03d5,
     type: 3}
   m_SteamViveControlsPrefab: {fileID: 1000010438099326, guid: 563752fa90755a246adda5cf3c8291cf,
@@ -31517,7 +31542,8 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 20695451175819636, guid: f158162c2f61e2142b099443643a1f93, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: f158162c2f61e2142b099443643a1f93, type: 3}
 --- !u!1 &2094189264 stripped
 GameObject:

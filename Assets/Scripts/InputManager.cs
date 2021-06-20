@@ -263,9 +263,9 @@ namespace TiltBrush
         // Note that m_ControllerInfos is not the source of truth for controllers.  That's located
         // in VrSdk.m_VrControls.  These are potentially out of date for a frame when controllers
         // change.
-        public static ControllerInfo[] Controllers { get { return m_Instance.m_ControllerInfos; } }
-        public static ControllerInfo Wand { get { return Controllers[(int)ControllerName.Wand]; } }
-        public static ControllerInfo Brush { get { return Controllers[(int)ControllerName.Brush]; } }
+        public static ControllerInfo[] Controllers { get => m_Instance.m_ControllerInfos; }
+        public static ControllerInfo Wand { get => Controllers[(int)ControllerName.Wand]; }
+        public static ControllerInfo Brush { get => Controllers[(int)ControllerName.Brush]; }
         static public event Action OnSwapControllers;
 
         //

@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 4000011975441068}
   - component: {fileID: 114000011204291836}
   - component: {fileID: 114000013850239298}
+  - component: {fileID: 2579469101581802702}
   m_Layer: 14
   m_Name: Controller (wand)
   m_TagString: Untagged
@@ -150,6 +151,24 @@ MonoBehaviour:
     type: 2}
   m_TriggerMaterialInactive: {fileID: 2100000, guid: c3c67c655fefce843a4094dbcf752549,
     type: 2}
+--- !u!114 &2579469101581802702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000012466662228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a2a9c34df4095f47b9ca8f975175f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Device: 1
+  m_PoseSource: 4
+  m_PoseProviderComponent: {fileID: 0}
+  m_TrackingType: 0
+  m_UpdateType: 0
+  m_UseRelativeTransform: 0
 --- !u!1 &1000013955957702
 GameObject:
   m_ObjectHideFlags: 0
@@ -161,6 +180,7 @@ GameObject:
   - component: {fileID: 4000011821643164}
   - component: {fileID: 114000013477957092}
   - component: {fileID: 114000014227542672}
+  - component: {fileID: 7904282622462033758}
   m_Layer: 14
   m_Name: Controller (brush)
   m_TagString: Untagged
@@ -217,3 +237,21 @@ MonoBehaviour:
     type: 2}
   m_TriggerMaterialInactive: {fileID: 2100000, guid: c3c67c655fefce843a4094dbcf752549,
     type: 2}
+--- !u!114 &7904282622462033758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000013955957702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a2a9c34df4095f47b9ca8f975175f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Device: 1
+  m_PoseSource: 5
+  m_PoseProviderComponent: {fileID: 0}
+  m_TrackingType: 0
+  m_UpdateType: 0
+  m_UseRelativeTransform: 0

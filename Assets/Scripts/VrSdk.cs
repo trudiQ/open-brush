@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEngine.XR;
 using Valve.VR;
 
 
@@ -122,7 +123,7 @@ namespace TiltBrush
         [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
         [SerializeField] private SteamVR_Overlay m_SteamVROverlay;
 
-        // VR  Data and Prefabs for specific VR systems
+        // VR Data and Prefabs for specific VR systems
         [SerializeField] private GameObject m_VrSystem;
         [SerializeField] private GameObject m_SteamUninitializedControlsPrefab;
         [SerializeField] private GameObject m_SteamViveControlsPrefab;
@@ -142,11 +143,14 @@ namespace TiltBrush
         [SerializeField] private Camera m_VrCamera;
 
         // Runtime VR Spawned Controllers
-        // This is the source of truth for controllers.  InputManager.m_ControllerInfos stores
-        // links to some of these components, but may be out of date for a frame when
-        // controllers change.
+        //  - This is the source of truth for controllers.
+        //  - InputManager.m_ControllerInfos stores links to some of these components, but may be
+        //    out of date for a frame when controllers change.
         private VrControllers m_VrControls;
         public VrControllers VrControls => m_VrControls;
+
+        // This is set to the headset if one connects.
+        private InputDevice m_HeadSet;
 
         private bool m_HasVrFocus = true;
 
@@ -164,8 +168,8 @@ namespace TiltBrush
         public enum DoF
         {
             None,
-            Two,    // Mouse & Keyboard
-            Six,    // Vive, Rift, etc
+            Two, // Mouse & Keyboard
+            Six, // Vive, Rift, etc
         }
 
         // -------------------------------------------------------------------------------------------- //
@@ -181,22 +185,143 @@ namespace TiltBrush
 
         public float AnalogGripBinaryThreshold_Rift
         {
-            get { return m_AnalogGripBinaryThreshold_Rift; }
+            get => m_AnalogGripBinaryThreshold_Rift;
         }
 
         public bool IsInitializingSteamVr
         {
-            get
-            {
-                return VrControls.Brush.ControllerGeometry.Style == ControllerStyle.InitializingSteamVR;
-            }
+            get => VrControls.Brush.ControllerGeometry.Style == ControllerStyle.InitializingSteamVR;
         }
 
         // -------------------------------------------------------------------------------------------- //
         // Private Unity Component Events
         // -------------------------------------------------------------------------------------------- //
 
+        private void OnEnable()
+        {
+            InputDevices.deviceConnected += OnDeviceConnected;
+            // TODO-XR - OnDeviceDisconnected
+        }
+
+        private void OnDisable()
+        {
+            InputDevices.deviceConnected -= OnDeviceConnected;
+        }
+
         void Awake()
+        {
+            SelectOverlay();
+
+            // TODO-XR - Set the per platform info
+
+            switch (App.Config.m_SdkMode)
+            {
+                case SdkMode.Oculus:
+                    {
+#if OCULUS_SUPPORTED
+                        // ---------------------------------------------------------------------------------------- //
+                        // OculusVR
+                        // ---------------------------------------------------------------------------------------- //
+                        OVRManager manager = gameObject.AddComponent<OVRManager>();
+                        manager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
+                        manager.useRecommendedMSAALevel = false;
+
+                        SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
+                        // adding components to the VR Camera needed for fading view and getting controller poses.
+                        m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
+                        m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
+
+                        gameObject.AddComponent<OculusMRCCameraUpdate>();
+#endif // OCULUS_SUPPORTED
+                        break;
+                    }
+                case SdkMode.SteamVR:
+                    {
+                        // ---------------------------------------------------------------------------------------- //
+                        // SteamVR
+                        // ---------------------------------------------------------------------------------------- //
+                        // SteamVR_Render needs to be instantiated from our version of the prefab before any other
+                        // SteamVR objects are instantiated because otherwise, those other objects will instantiate
+                        // their own version of SteamVR_Render, which won't have the same connections as our prefab.
+                        // Ideally, this instantiation would occur in a place that is guaranteed to happen first but
+                        // since we don't have an appropriate place for that now, it's being placed right before the
+                        // first call that would otherwise instantiate it.
+                        Instantiate(App.Config.m_SteamVrRenderPrefab);
+                        if (App.Config.VrHardware == VrHardware.Rift)
+                        {
+                            SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
+                        }
+                        else if (App.Config.VrHardware == VrHardware.Wmr)
+                        {
+                            SetControllerStyle(TiltBrush.ControllerStyle.Wmr);
+                        }
+                        else
+                        {
+                            SetControllerStyle(TiltBrush.ControllerStyle.InitializingSteamVR);
+                        }
+                        m_VrCamera.gameObject.AddComponent<SteamVR_Camera>();
+                        break;
+                    }
+                case SdkMode.Gvr:
+                    {
+                        // ---------------------------------------------------------------------------------------- //
+                        // GoogleVR
+                        // ---------------------------------------------------------------------------------------- //
+                        SetControllerStyle(TiltBrush.ControllerStyle.Gvr);
+                        // Custom controls parenting for GVR.
+                        m_VrControls.transform.parent = null;
+
+                        // TODO: Why is this offset needed? This should also be in a prefab, not here.
+                        var pos = m_VrSystem.gameObject.transform.localPosition;
+                        pos.y += 15f;
+                        m_VrSystem.gameObject.transform.localPosition = pos;
+
+                        pos = m_VrControls.gameObject.transform.localPosition;
+                        pos.y += 15f;
+                        m_VrControls.gameObject.transform.localPosition = pos;
+
+#if UNITY_EDITOR && false
+                        // Instant preview
+                        m_VrCamera.gameObject.AddComponent<InstantPreviewHelper>();
+                        var ip = m_VrCamera.gameObject.AddComponent<Gvr.Internal.InstantPreview>();
+                        ip.OutputResolution = Gvr.Internal.InstantPreview.Resolutions.Big;
+                        ip.MultisampleCount = Gvr.Internal.InstantPreview.MultisampleCounts.One;
+                        ip.BitRate = Gvr.Internal.InstantPreview.BitRates._16000;
+#endif
+
+                        // Custom controls parenting for GVR.
+                        m_VrControls.transform.parent = m_VrCamera.transform.parent;
+                        break;
+                    }
+                case SdkMode.Monoscopic:
+                    // ---------------------------------------------------------------------------------------- //
+                    // Monoscopic
+                    // ---------------------------------------------------------------------------------------- //
+                    m_VrCamera.gameObject.AddComponent<MonoCameraControlScript>();
+                    SetControllerStyle(TiltBrush.ControllerStyle.None);
+                    // Offset for head position, since camera height is set by the VR system.
+                    m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
+                    break;
+                case SdkMode.UnityXr:
+                    // ---------------------------------------------------------------------------------------- //
+                    // XR
+                    // ---------------------------------------------------------------------------------------- //
+                    SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
+                    break;
+                default:
+                    // ---------------------------------------------------------------------------------------- //
+                    // Non-VR
+                    // ---------------------------------------------------------------------------------------- //
+                    SetControllerStyle(TiltBrush.ControllerStyle.None);
+                    // Offset for head position, since camera height is set by the VR system.
+                    m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
+                    break;
+            }
+            m_VrCamera.gameObject.SetActive(true);
+            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf);
+        }
+
+        private void SelectOverlay()
         {
             if (App.Config.IsMobileHardware && m_MobileOverlayPrefab != null)
             {
@@ -213,105 +338,12 @@ namespace TiltBrush
             }
 #endif // OCULUS_SUPPORTED
 
+            if (m_overlay == null && App.Config.m_SdkMode == SdkMode.UnityXr && m_MobileOverlayPrefab != null)
+            {
+                m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
+            }
+
             m_overlay?.Initialise();
-
-            // TODO-XR - Set the per platform info
-
-            if (App.Config.m_SdkMode == SdkMode.Oculus)
-            {
-#if OCULUS_SUPPORTED
-                // ---------------------------------------------------------------------------------------- //
-                // OculusVR
-                // ---------------------------------------------------------------------------------------- //
-                OVRManager manager = gameObject.AddComponent<OVRManager>();
-                manager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
-                manager.useRecommendedMSAALevel = false;
-
-                SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
-                // adding components to the VR Camera needed for fading view and getting controller poses.
-                m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
-                m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
-
-                gameObject.AddComponent<OculusMRCCameraUpdate>();
-#endif // OCULUS_SUPPORTED
-            }
-            else if (App.Config.m_SdkMode == SdkMode.SteamVR)
-            {
-                // ---------------------------------------------------------------------------------------- //
-                // SteamVR
-                // ---------------------------------------------------------------------------------------- //
-                // SteamVR_Render needs to be instantiated from our version of the prefab before any other
-                // SteamVR objects are instantiated because otherwise, those other objects will instantiate
-                // their own version of SteamVR_Render, which won't have the same connections as our prefab.
-                // Ideally, this instantiation would occur in a place that is guaranteed to happen first but
-                // since we don't have an appropriate place for that now, it's being placed right before the
-                // first call that would otherwise instantiate it.
-                Instantiate(App.Config.m_SteamVrRenderPrefab);
-                if (App.Config.VrHardware == VrHardware.Rift)
-                {
-                    SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
-                }
-                else if (App.Config.VrHardware == VrHardware.Wmr)
-                {
-                    SetControllerStyle(TiltBrush.ControllerStyle.Wmr);
-                }
-                else
-                {
-                    SetControllerStyle(TiltBrush.ControllerStyle.InitializingSteamVR);
-                }
-                m_VrCamera.gameObject.AddComponent<SteamVR_Camera>();
-            }
-            else if (App.Config.m_SdkMode == SdkMode.Gvr)
-            {
-                // ---------------------------------------------------------------------------------------- //
-                // GoogleVR
-                // ---------------------------------------------------------------------------------------- //
-                SetControllerStyle(TiltBrush.ControllerStyle.Gvr);
-                // Custom controls parenting for GVR.
-                m_VrControls.transform.parent = null;
-
-                // TODO: Why is this offset needed? This should also be in a prefab, not here.
-                var pos = m_VrSystem.gameObject.transform.localPosition;
-                pos.y += 15f;
-                m_VrSystem.gameObject.transform.localPosition = pos;
-
-                pos = m_VrControls.gameObject.transform.localPosition;
-                pos.y += 15f;
-                m_VrControls.gameObject.transform.localPosition = pos;
-
-#if UNITY_EDITOR && false
-                // Instant preview
-                m_VrCamera.gameObject.AddComponent<InstantPreviewHelper>();
-                var ip = m_VrCamera.gameObject.AddComponent<Gvr.Internal.InstantPreview>();
-                ip.OutputResolution = Gvr.Internal.InstantPreview.Resolutions.Big;
-                ip.MultisampleCount = Gvr.Internal.InstantPreview.MultisampleCounts.One;
-                ip.BitRate = Gvr.Internal.InstantPreview.BitRates._16000;
-#endif
-
-                // Custom controls parenting for GVR.
-                m_VrControls.transform.parent = m_VrCamera.transform.parent;
-            }
-            else if (App.Config.m_SdkMode == SdkMode.Monoscopic)
-            {
-                // ---------------------------------------------------------------------------------------- //
-                // Monoscopic
-                // ---------------------------------------------------------------------------------------- //
-                m_VrCamera.gameObject.AddComponent<MonoCameraControlScript>();
-                SetControllerStyle(TiltBrush.ControllerStyle.None);
-                // Offset for head position, since camera height is set by the VR system.
-                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
-            }
-            else
-            {
-                // ---------------------------------------------------------------------------------------- //
-                // Non-VR
-                // ---------------------------------------------------------------------------------------- //
-                SetControllerStyle(TiltBrush.ControllerStyle.None);
-                // Offset for head position, since camera height is set by the VR system.
-                m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
-            }
-            m_VrCamera.gameObject.SetActive(true);
-            m_VrSystem.SetActive(m_VrCamera.gameObject.activeSelf);
         }
 
         void Start()
@@ -368,6 +400,16 @@ namespace TiltBrush
         // -------------------------------------------------------------------------------------------- //
         // Private VR SDK-Related Events
         // -------------------------------------------------------------------------------------------- //
+
+        private void OnDeviceConnected(InputDevice device)
+        {
+            const InputDeviceCharacteristics kHeadset = InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice;
+
+            if (device.isValid && (device.characteristics & kHeadset) == kHeadset)
+            {
+                m_HeadSet = device;
+            }
+        }
 
         private void OnInputFocus(params object[] args)
         {
@@ -757,12 +799,12 @@ namespace TiltBrush
         public ControllerInfo CreateControllerInfo(BaseControllerBehavior behavior, bool isLeftHand)
         {
             // An XR controller handles all controllers for platforms that support the Unity XR plugin system.
-            if (App.Config.m_SdkMode == SdkMode.UnityXr)
+            if (App.Config.ControllerMode == ControllerMode.XrManagement)
             {
                 return new XrControllerInfo(behavior, isLeftHand);
             }
 
-            // TODO-XR - Delete old ControllerInfo creators.
+            // TODO-XR - In time we XR Management should replace all of these.
             if (App.Config.m_SdkMode == SdkMode.SteamVR)
             {
                 return new SteamControllerInfo(behavior);
@@ -865,6 +907,11 @@ namespace TiltBrush
         // Retruns true if SDK does not have an HMD or if it is correctly initialized.
         public bool IsHmdInitialized()
         {
+            if (App.Config.m_SdkMode == SdkMode.UnityXr && !m_HeadSet.isValid)
+            {
+                return false;
+            }
+
             if (App.Config.m_SdkMode == SdkMode.SteamVR && SteamVR.instance == null)
             {
                 return false;
