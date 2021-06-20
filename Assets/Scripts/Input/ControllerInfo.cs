@@ -24,7 +24,7 @@ namespace TiltBrush
     /// </summary>
     public abstract class ControllerInfo
     {
-        // The various inputs available on VR controlllers.
+        // The various inputs available on VR controllers.
 
         // The invalid position (0,0) is excluded from all the pad buttons,
         // except for "Any".

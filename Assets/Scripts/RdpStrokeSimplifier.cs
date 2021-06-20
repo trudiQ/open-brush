@@ -17,7 +17,7 @@ using ControlPoint = TiltBrush.PointerManager.ControlPoint;
 
 namespace TiltBrush
 {
-    /// Simplifies a set of control points using the Ramer-Douglas-Peucker alogorithm.
+    /// Simplifies a set of control points using the Ramer-Douglas-Peucker algorithm.
     /// (See http://karthaus.nl/rdp/ )
     public class RdpStrokeSimplifier
     {

@@ -273,7 +273,7 @@ namespace TiltBrush
                     || SpoofMobileHardware.MobileHardware;
             }
 #else
-            get { return Application.platform == RuntimePlatform.Android; }
+            get => Application.platform == RuntimePlatform.Android;
 #endif
         }
 
@@ -398,10 +398,7 @@ namespace TiltBrush
 
         public bool OfflineRender
         {
-            get
-            {
-                return !string.IsNullOrEmpty(m_VideoPathToRender) && m_SdkMode != SdkMode.Ods;
-            }
+            get => !string.IsNullOrEmpty(m_VideoPathToRender) && m_SdkMode != SdkMode.Ods;
         }
 
         public PlatformConfig PlatformConfig
@@ -634,7 +631,7 @@ namespace TiltBrush
 #if (UNITY_EDITOR || EXPERIMENTAL_ENABLED)
         public static bool IsExperimental
         {
-            get { return App.Config.m_IsExperimental; }
+            get => App.Config.m_IsExperimental;
         }
 #endif
 
@@ -711,8 +708,7 @@ namespace TiltBrush
         // Checking what kind of hardware (Rift, Vive, of WMR) is being used in SteamVR.
         private VrHardware GetHwTrackedInSteamVr()
         {
-            string manufacturer = GetSteamVrDeviceStringProperty(
-                Valve.VR.ETrackedDeviceProperty.Prop_ManufacturerName_String);
+            string manufacturer = GetSteamVrDeviceStringProperty(Valve.VR.ETrackedDeviceProperty.Prop_ManufacturerName_String);
 
             if (string.IsNullOrEmpty(manufacturer))
             {
@@ -824,6 +820,7 @@ namespace TiltBrush
             {
                 return;
             }
+            
             bool useVrSdk = m_SdkMode == SdkMode.Oculus
                 || m_SdkMode == SdkMode.SteamVR
                 || m_SdkMode == SdkMode.Gvr;
