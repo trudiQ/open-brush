@@ -305,7 +305,7 @@ namespace TiltBrush
 
         public bool AllowVrControllers
         {
-            get { return m_AllowVrControllers; }
+            get => m_AllowVrControllers;
             set
             {
                 m_AllowVrControllers = value;
@@ -324,10 +324,7 @@ namespace TiltBrush
 
         public bool WandOnRight
         {
-            get
-            {
-                return m_WandOnRight;
-            }
+            get => m_WandOnRight;
 
             set
             {
@@ -547,6 +544,8 @@ namespace TiltBrush
                     m_ControllerInfos[i].Update();
                 }
 
+                App.VrSdk.OnNewPoses(); // TODO-XR - HACK??
+
                 //cache touch inputs so we can control their usage
                 m_Touch.m_Valid = (Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began);
                 if (m_Touch.m_Valid)
@@ -583,13 +582,14 @@ namespace TiltBrush
 
                 // Update velocity and acceleration.
                 Vector3 currPosition = info.Transform.position;
+
                 // TODO: should this take velocity straight from the controller?
                 // Might be more accurate
                 Vector3 currVelocity = (currPosition - info.m_Position) / Time.deltaTime;
-                info.m_Acceleration =
-                    (currVelocity - info.m_Velocity) / Time.deltaTime;
+                info.m_Acceleration = (currVelocity - info.m_Velocity) / Time.deltaTime;
                 info.m_Velocity = currVelocity;
                 info.m_Position = currPosition;
+
                 if (info.m_WasTracked != info.IsTrackedObjectValid)
                 {
                     info.ShowController(info.IsTrackedObjectValid && App.Instance.ShowControllers);

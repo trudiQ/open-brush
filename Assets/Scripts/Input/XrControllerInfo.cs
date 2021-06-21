@@ -31,10 +31,7 @@ namespace TiltBrush
 
             m_characteristics = InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice;
 
-            if (isLeftHand)
-                m_characteristics |= InputDeviceCharacteristics.Left;
-            else
-                m_characteristics |= InputDeviceCharacteristics.Right;
+            m_characteristics |= isLeftHand ? InputDeviceCharacteristics.Left : InputDeviceCharacteristics.Right;
         }
 
         ~XrControllerInfo()
@@ -45,7 +42,38 @@ namespace TiltBrush
         private void OnDeviceConnected(InputDevice device)
         {
             if (!m_device.isValid && (device.characteristics & m_characteristics) == m_characteristics)
+            {
                 m_device = device;
+            }
+        }
+
+        // Update device 
+        public void UpdatePoses()
+        {
+            IsTrackedObjectValid = m_device.isValid;
+
+            if (m_device.isValid)
+            {
+                Transform t = Behavior.transform;
+
+                Vector3 position;
+                if (m_device.TryGetFeatureValue(CommonUsages.devicePosition, out position))
+                {
+                    t.localPosition = position;
+                }
+
+                Quaternion rotation;
+                if (m_device.TryGetFeatureValue(CommonUsages.deviceRotation, out rotation))
+                {
+                    t.localRotation = rotation;
+                }
+            }
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            UpdatePoses();
         }
 
         public override float GetTriggerRatio()
@@ -128,6 +156,64 @@ namespace TiltBrush
             return 0.0f;
         }
 
+        private bool CheckVrTouch(VrInput input)
+        {
+            bool value = false;
+            switch (input)
+            {
+                case VrInput.Button01:
+                case VrInput.Button04:
+                case VrInput.Button06:
+                    if (m_device.TryGetFeatureValue(CommonUsages.primaryButton, out value))
+                    {
+                        return value;
+                    }
+                    break;
+                case VrInput.Button02:
+                case VrInput.Button03:
+                case VrInput.Button05:
+                    if (m_device.TryGetFeatureValue(CommonUsages.secondaryButton, out value))
+                    {
+                        return value;
+                    }
+                    break;
+                case VrInput.Directional:
+                case VrInput.Thumbstick:
+                case VrInput.Touchpad:
+                    if (m_device.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value))
+                    {
+                        return value;
+                    }
+                    break;
+                case VrInput.Any:
+                    // return  OVRInput.Touch.One |
+                    //         OVRInput.Touch.Two |
+                    //         OVRInput.Touch.PrimaryThumbstick;
+                    if (m_device.TryGetFeatureValue(CommonUsages.primaryButton, out value) && value)
+                        return true;
+                    if (m_device.TryGetFeatureValue(CommonUsages.secondaryButton, out value) && value)
+                        return true;
+                    if (m_device.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value) && value)
+                        return true;
+                    break;
+                default:
+                    Debug.Assert(false, $"Invalid touch button enum: {input.ToString()}");
+                    break;
+            }
+
+            return value;
+        }
+
+        public override bool GetVrInputTouch(VrInput input)
+        {
+            if (m_device.isValid)
+            {
+                return CheckVrTouch(input);
+            }
+
+            return false;
+        }
+
         private bool CheckVrInput(VrInput input)
         {
             bool value = false;
@@ -196,12 +282,6 @@ namespace TiltBrush
             }
 
             return value; // Should never get here.
-        }
-
-        // this is a specific function for Oculus so always returning false
-        public override bool GetVrInputTouch(VrInput button)
-        {
-            return false;
         }
 
         public override bool GetVrInput(VrInput input)

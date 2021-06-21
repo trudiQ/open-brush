@@ -212,24 +212,24 @@ namespace TiltBrush
         {
             SelectOverlay();
 
-            // TODO-XR - Set the per platform info
-
             switch (App.Config.m_SdkMode)
             {
                 case SdkMode.Oculus:
                     {
 #if OCULUS_SUPPORTED
-                        // ---------------------------------------------------------------------------------------- //
                         // OculusVR
-                        // ---------------------------------------------------------------------------------------- //
                         OVRManager manager = gameObject.AddComponent<OVRManager>();
                         manager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
                         manager.useRecommendedMSAALevel = false;
 
                         SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
-                        // adding components to the VR Camera needed for fading view and getting controller poses.
-                        m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
-                        m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
+
+                        if (App.Config.ControllerMode == ControllerMode.Default)
+                        {
+                            // adding components to the VR Camera needed for fading view and getting controller poses.
+                            m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
+                            m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
+                        }
 
                         gameObject.AddComponent<OculusMRCCameraUpdate>();
 #endif // OCULUS_SUPPORTED
@@ -237,9 +237,6 @@ namespace TiltBrush
                     }
                 case SdkMode.SteamVR:
                     {
-                        // ---------------------------------------------------------------------------------------- //
-                        // SteamVR
-                        // ---------------------------------------------------------------------------------------- //
                         // SteamVR_Render needs to be instantiated from our version of the prefab before any other
                         // SteamVR objects are instantiated because otherwise, those other objects will instantiate
                         // their own version of SteamVR_Render, which won't have the same connections as our prefab.
@@ -262,11 +259,10 @@ namespace TiltBrush
                         m_VrCamera.gameObject.AddComponent<SteamVR_Camera>();
                         break;
                     }
+
                 case SdkMode.Gvr:
                     {
-                        // ---------------------------------------------------------------------------------------- //
                         // GoogleVR
-                        // ---------------------------------------------------------------------------------------- //
                         SetControllerStyle(TiltBrush.ControllerStyle.Gvr);
                         // Custom controls parenting for GVR.
                         m_VrControls.transform.parent = null;
@@ -293,25 +289,19 @@ namespace TiltBrush
                         m_VrControls.transform.parent = m_VrCamera.transform.parent;
                         break;
                     }
+
                 case SdkMode.Monoscopic:
-                    // ---------------------------------------------------------------------------------------- //
-                    // Monoscopic
-                    // ---------------------------------------------------------------------------------------- //
                     m_VrCamera.gameObject.AddComponent<MonoCameraControlScript>();
                     SetControllerStyle(TiltBrush.ControllerStyle.None);
                     // Offset for head position, since camera height is set by the VR system.
                     m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
                     break;
+
                 case SdkMode.UnityXr:
-                    // ---------------------------------------------------------------------------------------- //
-                    // XR
-                    // ---------------------------------------------------------------------------------------- //
                     SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
                     break;
-                default:
-                    // ---------------------------------------------------------------------------------------- //
-                    // Non-VR
-                    // ---------------------------------------------------------------------------------------- //
+
+                default: // Non-VR
                     SetControllerStyle(TiltBrush.ControllerStyle.None);
                     // Offset for head position, since camera height is set by the VR system.
                     m_VrCamera.transform.localPosition = new Vector3(0f, 1.5f, 0f);
@@ -348,38 +338,55 @@ namespace TiltBrush
 
         void Start()
         {
-            if (App.Config.m_SdkMode == SdkMode.SteamVR)
+            // Hook up the position update and focus event listeners.
+            switch (App.Config.m_SdkMode)
             {
-                if (SteamVR.instance != null)
-                {
-                    SteamVR_Events.InputFocus.Listen(OnInputFocusSteam);
-                    SteamVR_Events.NewPosesApplied.Listen(OnNewPoses);
-                }
-                m_FrameTiming = new Compositor_FrameTiming
-                {
-                    m_nSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf(
-                        typeof(Compositor_FrameTiming))
-                };
-            }
-            else if (App.Config.m_SdkMode == SdkMode.Oculus)
-            {
+                case SdkMode.SteamVR:
+                    {
+                        if (SteamVR.instance != null)
+                        {
+                            SteamVR_Events.InputFocus.Listen(OnInputFocusSteam);
+                            SteamVR_Events.NewPosesApplied.Listen(OnNewPoses);
+                        }
+                        m_FrameTiming = new Compositor_FrameTiming
+                        {
+                            m_nSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf(
+                                typeof(Compositor_FrameTiming))
+                        };
+                        break;
+                    }
+                case SdkMode.Oculus:
+                    {
 #if OCULUS_SUPPORTED
-                OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
-                // We shouldn't call this frequently, hence the local cache and callbacks.
-                OVRManager.VrFocusAcquired += () => { OnInputFocus(true); };
-                OVRManager.VrFocusLost += () => { OnInputFocus(false); };
+                        if (App.Config.ControllerMode == ControllerMode.Default)
+                        {
+                            OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
+
+                            // We shouldn't call this frequently, hence the local cache and callbacks.
+                            OVRManager.VrFocusAcquired += () => { OnInputFocus(true); };
+                            OVRManager.VrFocusLost += () => { OnInputFocus(false); };
+                        }
 #endif // OCULUS_SUPPORTED
-            }
-            else if (App.Config.m_SdkMode == SdkMode.Gvr)
-            {
-                var brushGeom = InputManager.Brush.Geometry;
-                GvrControllerInput.OnPostControllerInputUpdated += OnNewPoses;
+                        break;
+                    }
+                case SdkMode.Gvr:
+                    {
+                        var brushGeom = InputManager.Brush.Geometry;
+                        GvrControllerInput.OnPostControllerInputUpdated += OnNewPoses;
+                        break;
+                    }
+                case SdkMode.UnityXr:
+                    {
+                        OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
+
+                        // TODO-XR - Focus got/lost events.
+                        break;
+                    }
             }
 
             if (m_NeedsToAttachConsoleScript && m_VrControls != null)
             {
-                ControllerConsoleScript.m_Instance.AttachToController(
-                    m_VrControls.Brush);
+                ControllerConsoleScript.m_Instance.AttachToController(m_VrControls.Brush);
                 m_NeedsToAttachConsoleScript = false;
             }
         }
@@ -393,7 +400,10 @@ namespace TiltBrush
             }
             else if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
-                OculusHandTrackingManager.NewPosesApplied -= OnNewPoses;
+                if (App.Config.ControllerMode == ControllerMode.Default)
+                {
+                    OculusHandTrackingManager.NewPosesApplied -= OnNewPoses;
+                }
             }
         }
 
@@ -403,7 +413,8 @@ namespace TiltBrush
 
         private void OnDeviceConnected(InputDevice device)
         {
-            const InputDeviceCharacteristics kHeadset = InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice;
+            const InputDeviceCharacteristics kHeadset =
+                InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice;
 
             if (device.isValid && (device.characteristics & kHeadset) == kHeadset)
             {
@@ -417,7 +428,7 @@ namespace TiltBrush
             m_HasVrFocus = (bool)args[0];
         }
 
-        private void OnNewPoses()
+        public void OnNewPoses() // TODO-XR - Make this private again
         {
             if (NewControllerPosesApplied != null)
             {
@@ -602,6 +613,7 @@ namespace TiltBrush
             }
         }
 
+        // Used for debugging.
         static private bool IsClockwiseConvex(Vector3[] points)
         {
             for (int i = 0; i < points.Length; ++i)
@@ -702,7 +714,8 @@ namespace TiltBrush
                         //   isQuest = (UnityEngine.XR.XRDevice.model != "Oculus Rift CV1");
                         bool isQuestController = (UnityEngine.XR.XRDevice.refreshRate < 81f) ||
                             (App.Config.VrHardware == VrHardware.Quest);
-                        if (App.Config.m_SdkMode == SdkMode.Oculus)
+
+                        if (App.Config.m_SdkMode == SdkMode.Oculus || App.Config.m_SdkMode == SdkMode.UnityXr)
                         {
                             controlsPrefab = isQuestController ? m_OculusQuestControlsPrefab : m_OculusRiftControlsPrefab;
                         }
@@ -886,8 +899,7 @@ namespace TiltBrush
             {
                 case SdkMode.Oculus:
                 case SdkMode.SteamVR:
-                    return DoF.Six;
-
+                case SdkMode.UnityXr:
                 case SdkMode.Gvr:
                     return DoF.Six;
 
@@ -904,7 +916,7 @@ namespace TiltBrush
         // -------------------------------------------------------------------------------------------- //
 
         // Returns false if SDK Mode uses an HMD, but it is not initialized.
-        // Retruns true if SDK does not have an HMD or if it is correctly initialized.
+        // Returns true if SDK does not have an HMD or if it is correctly initialized.
         public bool IsHmdInitialized()
         {
             if (App.Config.m_SdkMode == SdkMode.UnityXr && !m_HeadSet.isValid)
@@ -950,6 +962,8 @@ namespace TiltBrush
                 case SdkMode.Ods:
                     // TODO: 30 would be correct, buf feels too slow.
                     return 60;
+                case SdkMode.UnityXr:
+                    return 90; // TODO-XR - Figure out framerate from device?
                 default:
                     throw new NotImplementedException("Unknown VR SDK Mode");
             }
@@ -962,8 +976,8 @@ namespace TiltBrush
             {
                 case SdkMode.Oculus:
                 case SdkMode.SteamVR:
-                    return DoF.Six;
                 case SdkMode.Gvr:
+                case SdkMode.UnityXr:
                     return DoF.Six;
                 default:
                     return DoF.None;
@@ -1007,7 +1021,7 @@ namespace TiltBrush
             NewControllerPosesApplied = null;
         }
 
-        /// Restores the pose recieved callbacks that were saved off with DisablePoseTracking. Will merge
+        /// Restores the pose received callbacks that were saved off with DisablePoseTracking. Will merge
         /// any callbacks currently on OnControllerNewPoses.
         public void RestorePoseTracking()
         {

@@ -37,6 +37,7 @@ namespace TiltBrush
             {
                 case SdkMode.SteamVR:
                 case SdkMode.Oculus:
+                case SdkMode.UnityXr:
 #if (UNITY_EDITOR || EXPERIMENTAL_ENABLED)
                     if (Config.IsExperimental)
                     {
