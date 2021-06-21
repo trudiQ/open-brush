@@ -17,7 +17,7 @@ namespace Valve.VR
     {
         static SteamVR_AutoEnableVR()
         {
-            EditorApplication.update += Update;
+            //EditorApplication.update += Update;
         }
 
         protected const string openVRString = "OpenVR";
@@ -45,6 +45,8 @@ namespace Valve.VR
 
         public static void Update()
         {
+            return;
+            
             if (SteamVR_Settings.instance.autoEnableVR)
             {
                 bool enabledVR = false;
