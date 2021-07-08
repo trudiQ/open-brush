@@ -154,30 +154,13 @@ static class BuildTiltBrush
         set
         {
             EditorPrefs.SetString(kMenuSdkPref, value.ToString());
-            Menu.SetChecked(kMenuSdkMonoscopic, false);
+            Menu.SetChecked(kMenuSdkMonoscopic, value == SdkMode.Monoscopic);
 #if OCULUS_SUPPORTED
-            Menu.SetChecked(kMenuSdkOculus, false);
+            Menu.SetChecked(kMenuSdkOculus, value == SdkMode.Oculus);
 #endif // OCULUS_SUPPORTED
-            Menu.SetChecked(kMenuSdkSteamVr, false);
-            Menu.SetChecked(kMenuSdkGoogleVr, false);
-
-            switch (value)
-            {
-                case SdkMode.Monoscopic:
-                    Menu.SetChecked(kMenuSdkMonoscopic, true);
-                    break;
-                case SdkMode.Oculus:
-#if OCULUS_SUPPORTED
-                    Menu.SetChecked(kMenuSdkOculus, true);
-#endif // OCULUS_SUPPORTED
-                    break;
-                case SdkMode.SteamVR:
-                    Menu.SetChecked(kMenuSdkSteamVr, true);
-                    break;
-                case SdkMode.Gvr:
-                    Menu.SetChecked(kMenuSdkGoogleVr, true);
-                    break;
-            }
+            Menu.SetChecked(kMenuSdkSteamVr, value == SdkMode.SteamVR);
+            Menu.SetChecked(kMenuSdkGoogleVr, value == SdkMode.Gvr);
+            Menu.SetChecked(kMenuSdkUnityXr, value == SdkMode.UnityXr);
 
             if (!BuildTargetSupported(value, GuiSelectedBuildTarget))
             {
