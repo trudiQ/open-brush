@@ -85,6 +85,9 @@ namespace TiltBrush
 
         void Start()
         {
+            if (!App.VrSdk.IsHmdInitialized())
+                return;
+
             // Rescale the ground plane overlay if we have chaperone bounds.
             Vector3 roomExtents = App.VrSdk.GetRoomExtents();
             Renderer rndr = m_GroundPlaneOverlay.GetComponentInChildren<Renderer>();

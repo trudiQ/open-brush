@@ -601,7 +601,7 @@ namespace TiltBrush
                 Application.targetFrameRate = m_TargetFrameRate;
             }
 
-            if (VrSdk.HasRoomBounds())
+            if (!StartupError && VrSdk.HasRoomBounds())
             {
                 Vector3 extents = VrSdk.GetRoomExtents();
                 m_RoomRadius = Mathf.Min(Mathf.Abs(extents.x), Mathf.Abs(extents.z));
