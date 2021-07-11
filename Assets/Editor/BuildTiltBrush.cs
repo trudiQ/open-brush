@@ -66,6 +66,7 @@ static class BuildTiltBrush
     const string kMenuSdkOculus = "Tilt/Build/Sdk: OVR";
     const string kMenuSdkSteamVr = "Tilt/Build/Sdk: SteamVR";
     const string kMenuSdkGoogleVr = "Tilt/Build/Sdk: GoogleVR";
+    const string kMenuSdkUnityXr = "Tilt/Build/Sdk: UnityXr";
     const string kMenuPlatformPref = "Tilt/Build/Platform";
     const string kMenuPlatformWindows = "Tilt/Build/Platform: Windows";
     const string kMenuPlatformLinux = "Tilt/Build/Platform: Linux";
@@ -94,6 +95,10 @@ static class BuildTiltBrush
             new KeyValuePair<SdkMode, BuildTarget>(SdkMode.Oculus, BuildTarget.Android),
 #endif // OCULUS_SUPPORTED
             new KeyValuePair<SdkMode, BuildTarget>(SdkMode.Gvr, BuildTarget.Android),
+
+            new KeyValuePair<SdkMode, BuildTarget>(SdkMode.UnityXr, BuildTarget.StandaloneWindows64),
+            new KeyValuePair<SdkMode, BuildTarget>(SdkMode.UnityXr, BuildTarget.StandaloneOSX),
+            new KeyValuePair<SdkMode, BuildTarget>(SdkMode.UnityXr, BuildTarget.Android),
         };
 
     static readonly List<CopyRequest> kToCopy = new List<CopyRequest>
@@ -179,26 +184,10 @@ static class BuildTiltBrush
         set
         {
             EditorPrefs.SetString(kMenuPlatformPref, value.ToString());
-            Menu.SetChecked(kMenuPlatformWindows, false);
-            Menu.SetChecked(kMenuPlatformLinux, false);
-            Menu.SetChecked(kMenuPlatformOsx, false);
-            Menu.SetChecked(kMenuPlatformAndroid, false);
-
-            switch (value)
-            {
-                case BuildTarget.StandaloneWindows64:
-                    Menu.SetChecked(kMenuPlatformWindows, true);
-                    break;
-                case BuildTarget.StandaloneLinux64:
-                    Menu.SetChecked(kMenuPlatformLinux, true);
-                    break;
-                case BuildTarget.StandaloneOSX:
-                    Menu.SetChecked(kMenuPlatformOsx, true);
-                    break;
-                case BuildTarget.Android:
-                    Menu.SetChecked(kMenuPlatformAndroid, true);
-                    break;
-            }
+            Menu.SetChecked(kMenuPlatformWindows, value == BuildTarget.StandaloneWindows64);
+            Menu.SetChecked(kMenuPlatformLinux, value == BuildTarget.StandaloneLinux64);
+            Menu.SetChecked(kMenuPlatformOsx, value == BuildTarget.StandaloneOSX);
+            Menu.SetChecked(kMenuPlatformAndroid, value == BuildTarget.Android);
         }
     }
 
@@ -1378,8 +1367,7 @@ static class BuildTiltBrush
                 string error = FormatBuildReport(thing);
                 if (!string.IsNullOrEmpty(error))
                 {
-                    string message = string.Format(
-                        "BuildPipeline.BuildPlayer() returned: \"{0}\"", error);
+                    string message = $"BuildPipeline.BuildPlayer() returned: \"{error}\"";
                     Note(message);
                     throw new BuildFailedException(message);
                 }

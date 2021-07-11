@@ -20,6 +20,7 @@ using UnityEditor;
 using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using UnityEngine.XR;
 
 namespace TiltBrush
 {
@@ -76,8 +77,7 @@ namespace TiltBrush
             // Called when a build process is completed, with success/failure as the parameter.
             public event Action<bool> Completed;
 
-            public AndroidOperation(
-                string name, Func<string[], bool> successTest, params string[] arguments)
+            public AndroidOperation(string name, Func<string[], bool> successTest, params string[] arguments)
             {
                 m_successTest = successTest;
                 m_name = name;
@@ -273,10 +273,7 @@ namespace TiltBrush
 
             MakeBuildsGui();
 
-            if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
-            {
-                DeviceGui();
-            }
+            DeviceGui();
 
             BuildActionsGui();
 
@@ -482,22 +479,35 @@ namespace TiltBrush
             m_buildLog.Clear();
         }
 
-
-
         private void DeviceGui()
         {
-            using (var droids = new HeaderedVerticalLayout("Android devices"))
+            // Show the devices supported by Unity XR.
+            using (var unused = new HeaderedVerticalLayout("Supported Devices"))
             {
-                foreach (string device in m_androidDevices)
+                EditorGUILayout.LabelField(
+                    "XR Plugin Devices", string.Join(", ", XRSettings.supportedDevices),
+                    EditorStyles.wordWrappedLabel);
+
+                // EditorGUILayout.LabelField("Loaded", XRSettings.loadedDeviceName);
+            }
+
+            // TODO-XR - Do we still need this?
+            if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
+            {
+                using (var droids = new HeaderedVerticalLayout("Android devices"))
                 {
-                    bool selected = device == m_selectedAndroid;
-                    bool newSelected = GUILayout.Toggle(selected, device);
-                    if (selected != newSelected)
+                    foreach (string device in m_androidDevices)
                     {
-                        m_selectedAndroid = device;
+                        bool selected = device == m_selectedAndroid;
+                        bool newSelected = GUILayout.Toggle(selected, device);
+                        if (selected != newSelected)
+                        {
+                            m_selectedAndroid = device;
+                        }
                     }
                 }
             }
+
         }
 
         private void BuildActionsGui()
@@ -505,6 +515,13 @@ namespace TiltBrush
             using (var builds = new HeaderedVerticalLayout("Build"))
             {
                 EditorGUILayout.LabelField("Build Path", m_currentBuildPath);
+#if !UNITY_ANDROID
+                // A reminder that UNITY_ANDROID needs to be defined so that adb path is set and we can build Android.
+                if (BuildTiltBrush.GetGuiOptions().Target == BuildTarget.Android)
+                {
+                    EditorGUILayout.LabelField("Adb", "UNITY_ANDROID is not defined");
+                }
+#endif
                 if (!String.IsNullOrEmpty(m_adbPath))
                 {
                     EditorGUILayout.LabelField("Adb Path", m_adbPath);
@@ -573,14 +590,14 @@ namespace TiltBrush
             // Only set this if supporting SDK that needs Android (and is installed!).
 #if UNITY_ANDROID
 #if UNITY_EDITOR_WIN
-      string adbExe = "adb.exe";
+            string adbExe = "adb.exe";
 #else
-      string adbExe = "adb";
+            string adbExe = "adb";
 #endif
-      // If we're on Android cache the path to adb as it used during building. Need to do it pre-work so on main thread.
-      m_adbPath = BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android
-        ? Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", adbExe)
-        : null;
+            // If we're on Android cache the path to adb as it used during building. Need to do it pre-work so on main thread.
+            m_adbPath = BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android
+                ? Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", adbExe)
+                : null;
 #endif
 
             m_currentBuildPath = BuildTiltBrush.GetAppPathForGuiBuild();
