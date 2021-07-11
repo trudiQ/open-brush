@@ -462,20 +462,26 @@ namespace TiltBrush
 
         static string GetStartupString()
         {
-            string stamp = Config.m_BuildStamp;
+            string str = $"{App.kAppDisplayName} {Config.m_VersionNumber}";
+
+            if (!string.IsNullOrEmpty(Config.m_BuildStamp))
+                str += $" build {Config.m_BuildStamp}";
+
 #if UNITY_ANDROID
-            stamp += string.Format(" code {0}", AndroidUtils.GetVersionCode());
+            str += string.Format(" code {0}", AndroidUtils.GetVersionCode());
 #endif
 #if DEBUG
-            stamp += string.Format(" platcfg {0}", PlatformConfig.name);
+            str += $" {PlatformConfig.name}";
 #endif
-            return $"{App.kAppDisplayName} {Config.m_VersionNumber}\nBuild {stamp}";
+            return str;
         }
 
         void Awake()
         {
             m_Instance = this;
             Debug.Log(GetStartupString());
+
+            Debug.Log($"SdkMode: {App.Config.m_SdkMode}, ControllerMode: {App.Config.ControllerMode}.");
 
             // Begone, physics! You were using 0.3 - 1.3ms per frame on Quest!
             Physics.autoSimulation = false;
@@ -588,11 +594,6 @@ namespace TiltBrush
                 Debug.Log("VR HMD was not initialized on startup.");
                 StartupError = true;
                 CreateErrorDialog();
-            }
-            else
-            {
-                Debug.LogFormat("Sdk mode: {0} XRDevice.model: {1}",
-                    App.Config.m_SdkMode, UnityEngine.XR.XRDevice.model);
             }
 
             m_TargetFrameRate = VrSdk.GetHmdTargetFrameRate();

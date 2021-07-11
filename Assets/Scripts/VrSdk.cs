@@ -117,7 +117,6 @@ namespace TiltBrush
         [SerializeField] private float m_AnalogGripBinaryThreshold_Rift;
 
         private OverlayImplementation m_overlay; // new overlay
-        public OverlayImplementation Overlay { get => m_overlay; }
 
         // TODO: Move to the overlay implementations. 
         [SerializeField] private SimpleOverlay m_MobileOverlayPrefab;
@@ -147,7 +146,6 @@ namespace TiltBrush
         //  - InputManager.m_ControllerInfos stores links to some of these components, but may be
         //    out of date for a frame when controllers change.
         private VrControllers m_VrControls;
-        public VrControllers VrControls => m_VrControls;
 
         // This is set to the headset if one connects.
         private InputDevice m_HeadSet;
@@ -183,15 +181,15 @@ namespace TiltBrush
         // Public Controller Properties
         // -------------------------------------------------------------------------------------------- //
 
-        public float AnalogGripBinaryThreshold_Rift
-        {
-            get => m_AnalogGripBinaryThreshold_Rift;
-        }
+        public string HeadsetDeviceName => m_HeadSet.isValid ? m_HeadSet.name : "Unknown";
 
-        public bool IsInitializingSteamVr
-        {
-            get => VrControls.Brush.ControllerGeometry.Style == ControllerStyle.InitializingSteamVR;
-        }
+        public VrControllers VrControls => m_VrControls;
+
+        public OverlayImplementation Overlay => m_overlay;
+
+        public float AnalogGripBinaryThreshold_Rift => m_AnalogGripBinaryThreshold_Rift;
+
+        public bool IsInitializingSteamVr => VrControls.Brush.ControllerGeometry.Style == ControllerStyle.InitializingSteamVR;
 
         // -------------------------------------------------------------------------------------------- //
         // Private Unity Component Events
@@ -298,7 +296,7 @@ namespace TiltBrush
                     break;
 
                 case SdkMode.UnityXr:
-                    SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
+                    SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch); // TODO-XR - Implement controller mapping.
                     break;
 
                 default: // Non-VR
@@ -418,6 +416,7 @@ namespace TiltBrush
 
             if (device.isValid && (device.characteristics & kHeadset) == kHeadset)
             {
+                Debug.Log($"Headset connected: {device.manufacturer}, {device.name}");
                 m_HeadSet = device;
             }
         }
@@ -811,6 +810,8 @@ namespace TiltBrush
         // - Info, which encapsulates VR APIs (OVR, SteamVR, GVR, ...)
         public ControllerInfo CreateControllerInfo(BaseControllerBehavior behavior, bool isLeftHand)
         {
+            Debug.LogFormat("CreateController ({0}): {1}", isLeftHand ? "left" : "right", App.Config.ControllerMode.ToString());
+
             // An XR controller handles all controllers for platforms that support the Unity XR plugin system.
             if (App.Config.ControllerMode == ControllerMode.XrManagement)
             {
