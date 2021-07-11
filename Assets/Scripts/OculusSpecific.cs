@@ -16,6 +16,8 @@ using UnityEngine;
 using Node = UnityEngine.XR.XRNode;
 using NodeState = UnityEngine.XR.XRNodeState;
 
+// This requires OVROverlay from Oculus Integration on the Unity Asset Store.
+
 #if OCULUS_SUPPORTED
 namespace TiltBrush
 {
