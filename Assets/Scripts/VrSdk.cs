@@ -148,7 +148,7 @@ namespace TiltBrush
         private VrControllers m_VrControls;
 
         // This is set to the headset if one connects.
-        private InputDevice m_HeadSet;
+        private InputDevice m_Headset;
 
         private bool m_HasVrFocus = true;
 
@@ -181,7 +181,10 @@ namespace TiltBrush
         // Public Controller Properties
         // -------------------------------------------------------------------------------------------- //
 
-        public string HeadsetDeviceName => m_HeadSet.isValid ? m_HeadSet.name : "Unknown";
+        // Get headset device. Make sure you check it is valid: HeadsetDevice.isValid
+        public InputDevice HeadsetDevice => m_Headset;
+
+        public string HeadsetDeviceName => m_Headset.isValid ? m_Headset.name : "Unknown";
 
         public VrControllers VrControls => m_VrControls;
 
@@ -416,8 +419,8 @@ namespace TiltBrush
 
             if (device.isValid && (device.characteristics & kHeadset) == kHeadset)
             {
-                Debug.Log($"Headset connected: {device.manufacturer}, {device.name}");
-                m_HeadSet = device;
+                m_Headset = device;
+                Debug.Log($"Headset connected: {device.manufacturer}, {HeadsetDeviceName}");
             }
         }
 
@@ -920,7 +923,7 @@ namespace TiltBrush
         // Returns true if SDK does not have an HMD or if it is correctly initialized.
         public bool IsHmdInitialized()
         {
-            if (App.Config.m_SdkMode == SdkMode.UnityXr && !m_HeadSet.isValid)
+            if (App.Config.m_SdkMode == SdkMode.UnityXr && !m_Headset.isValid)
             {
                 return false;
             }

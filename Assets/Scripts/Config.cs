@@ -47,16 +47,16 @@ namespace TiltBrush
         SteamVR,
         Cardboard_Deprecated,
         Monoscopic,
-        Ods,                // Video rendering
-        Gvr,                // Google VR
-        UnityXr             // Unity XR plugin system. 
+        Ods,    // Video rendering
+        Gvr,    // Google VR
+        UnityXr // Unity XR plugin system. 
     }
 
     [Serializable]
     public enum ControllerMode
     {
-        Default,            // Whatever the SdkMode default is.
-        XrManagement        // Use Unity XR.
+        Default,     // Whatever the SdkMode default is.
+        XrManagement // Use Unity XR.
     }
 
     // These names are used in our analytics, so they must be protected from obfuscation.
@@ -66,13 +66,13 @@ namespace TiltBrush
     [Serializable]
     public enum VrHardware
     {
-        Unset,          // Not set yet.
-        Unsupported,    // We did not recognise the hardware.        
+        Unset,       // Not set yet.
+        Unsupported, // We did not recognise the hardware.        
         None,
         Rift,
         Vive,
         Daydream,
-        Wmr,            // Windows Mixed Reality
+        Wmr, // Windows Mixed Reality
         Quest,
     }
 
@@ -163,15 +163,15 @@ namespace TiltBrush
             {
                 if (m_VrHardware == TiltBrush.VrHardware.Unset)
                 {
-                    // Decide which hardware we are using by the headset.
+                    // check headset registered.
                     // Note: This is update during/after Awake(), so cannot be used reliably until Start().
-                    var inputDevices = new List<InputDevice>();
-                    InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, inputDevices);
+                    Debug.Assert(App.VrSdk.HeadsetDevice.isValid);
 
-                    if (inputDevices.Count > 0)
+                    // Decide which hardware we are using by the headset.
+                    var device = App.VrSdk.HeadsetDevice;
+                    if (device.isValid)
                     {
                         m_VrHardware = VrHardware.Unsupported;
-                        var device = inputDevices[0];
 
                         if (device.manufacturer == "Oculus")
                         {
@@ -820,7 +820,7 @@ namespace TiltBrush
             {
                 return;
             }
-            
+
             bool useVrSdk = m_SdkMode == SdkMode.Oculus
                 || m_SdkMode == SdkMode.SteamVR
                 || m_SdkMode == SdkMode.Gvr;
