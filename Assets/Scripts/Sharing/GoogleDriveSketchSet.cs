@@ -297,7 +297,7 @@ namespace TiltBrush
 
         private void OnDriveEnabledChanged()
         {
-            if (App.DriveSync.SyncEnabled)
+            if (App.DriveSync != null && App.DriveSync.SyncEnabled)
             {
                 EnumerateTiltFilesWhenReady();
                 OnSketchRefreshingChanged?.Invoke();
