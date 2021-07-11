@@ -234,18 +234,6 @@ namespace TiltBrush
             }
         }
 
-        public String HeadsetModelName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(m_HeadsetModelName))
-                {
-                    m_HeadsetModelName = UnityEngine.XR.XRDevice.model;
-                }
-                return m_HeadsetModelName;
-            }
-        }
-
         /// Return a value kinda sorta half-way between "building for Android" and "running on Android"
         /// In order of increasing strictness, here are the in-Editor semantics of various methods
         /// of querying the platform. All of these methods return true when running on-device.
