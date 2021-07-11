@@ -21,15 +21,25 @@ using JetBrains.Annotations;
 using TiltBrush;
 using UnityEditor;
 using UnityEditor.Callbacks;
-#if UNITY_2018_3_OR_NEWER
 using UnityEditor.Build.Reporting;
-#endif
 #if UNITY_EDITOR_OSX && UNITY_IPHONE
 using UnityEditor.iOS.Xcode;
 #endif
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Environment = System.Environment;
+
+//----------------------------------------------------------------------------------------
+// Notes on build flags which can be added to Player Settings.
+//
+//  - OCULUS_SUPPORTED
+//      - Oculus is an optional target. Define this flag to add Oculus targets.
+//      - Also need to import Oculus Integration from the Unity Asset Store (don't need any samples).
+//
+//  - UNITY_ANDROID
+//      - This needs to be defined to build Android targets, which includes the mobile devices.
+//
+//----------------------------------------------------------------------------------------
 
 // All output from this class is prefixed with "_btb_" to facilitate extracting
 // it from Unity's very noisy and spammy Editor.log file.
@@ -827,7 +837,6 @@ static class BuildTiltBrush
         }
     }
 
-    // TODO: this will be useful for ENABLE_EXPERIMENTAL as well
     class TempDefineSymbols : System.IDisposable
     {
         string m_prevSymbols;
@@ -843,8 +852,9 @@ static class BuildTiltBrush
                 .Select(elt => elt.Trim())
                 .Where(elt => elt != "")
                 .ToArray();
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                m_group, string.Join(";", newSymbols));
+            var newDefs = string.Join(";", newSymbols);
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(m_group, newDefs);
+            Debug.Log($"Build defines for {m_group.ToString()}: {newDefs}");
         }
 
         public void Dispose()
@@ -1190,6 +1200,7 @@ static class BuildTiltBrush
         string stamp = tiltOptions.Stamp;
         SdkMode vrSdk = tiltOptions.VrSdk;
         BuildOptions options = tiltOptions.UnityOptions;
+
         // Add your new scenes in this List for your app.
         // During the build process the Scene List in the Build Settings is ignored.
         // Only the following scenes are included in the build.
@@ -1230,8 +1241,6 @@ static class BuildTiltBrush
             config.m_BuildStamp = stamp;
             config.OnValidate();
             config.DoBuildTimeConfiguration(target);
-            // XXX: This does _not_ do anything in Unity 2017+, because config is a scene object
-            EditorUtility.SetDirty(config);
 
             // Some mildly-hacky shenanigans here; GetMergedManifest() doesn't expect
             // to be run at build-time (ie when nobody has called Start(), Awake()).
@@ -1328,9 +1337,7 @@ static class BuildTiltBrush
                 copyRequests.Add(new CopyRequest(exportRequest.source, exportRequest.destination));
             }
 
-            // This is what we need to do instead of SetDirty(config)
-            // TODO: Switch to using this after testing on-device.
-            // EditorSceneManager.MarkAllScenesDirty();
+            // Save our changes and notify the editor that there have been changes.
             EditorSceneManager.SaveOpenScenes();
 
             // If we're building android, we need to copy Support files into streaming assets
@@ -1411,7 +1418,6 @@ static class BuildTiltBrush
         // AssetDatabase.SaveAssets();
     }
 
-#if UNITY_2018_3_OR_NEWER
     // Returns null if no errors; otherwise a string with what went wrong.
     private static string FormatBuildStep(BuildStep step)
     {
@@ -1439,13 +1445,6 @@ static class BuildTiltBrush
         var steps = report.steps.Select(FormatBuildStep).Where(s => s != null);
         return "Errors:\n" + string.Join("\n", steps.ToArray());
     }
-#else
-    // Returns null if no errors; otherwise a string with what went wrong.
-    private static string FormatBuildReport(string report)
-    {
-        return report;
-    }
-#endif
 
     // Disables the Oculus resolution-setting override for non-Oculus builds.
     // Copies loose-file app data.
@@ -1695,20 +1694,11 @@ static class BuildTiltBrush
 
     private static int s_BackgroundBuildProcessId = 0;
 
-    public static bool DoingBackgroundBuild
-    {
-        get { return s_BackgroundBuildProcessId != 0; }
-    }
+    public static bool DoingBackgroundBuild => s_BackgroundBuildProcessId != 0;
 
     private const string kBackgroundProcessId = "Tilt Brush Background Build Process Id";
 
-    public static string BackgroundBuildLogPath
-    {
-        get
-        {
-            return Path.Combine(kBuildCopyDir, "BackgroundBuild.log");
-        }
-    }
+    public static string BackgroundBuildLogPath => Path.Combine(kBuildCopyDir, "BackgroundBuild.log");
 
     public static void DoBackgroundBuild(TiltBuildOptions tiltOptions, bool interactive)
     {
@@ -1831,6 +1821,5 @@ static class BuildTiltBrush
             }
         }
     }
-
 
 }

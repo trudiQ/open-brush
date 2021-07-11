@@ -33,6 +33,10 @@ using ZipSubfileReader = TiltBrush.ZipSubfileReader_SharpZipLib;
 using ZipLibrary = ICSharpCode.SharpZipLibUnityPort.Zip;
 #endif
 
+#if !UNITY_2019_4_OR_NEWER
+xxx "This is the minimal Unity supported by OpenBrush" xxx
+#endif
+
 [assembly: InternalsVisibleTo("Assembly-CSharp-Editor")]
 namespace TiltBrush
 {
