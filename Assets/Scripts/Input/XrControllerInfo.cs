@@ -32,6 +32,7 @@ namespace TiltBrush
         public XrControllerInfo(BaseControllerBehavior behavior, bool isLeftHand) : base(behavior)
         {
             InputDevices.deviceConnected += OnDeviceConnected;
+            InputDevices.deviceDisconnected += OnDeviceDisconnected;
 
             m_characteristics = InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice;
 
@@ -41,6 +42,7 @@ namespace TiltBrush
         ~XrControllerInfo()
         {
             InputDevices.deviceConnected -= OnDeviceConnected;
+            InputDevices.deviceDisconnected -= OnDeviceDisconnected;
         }
 
         private void OnDeviceConnected(InputDevice device)
@@ -48,6 +50,18 @@ namespace TiltBrush
             if (!m_device.isValid && (device.characteristics & m_characteristics) == m_characteristics)
             {
                 m_device = device;
+                Debug.Log($"XrController connected: {device.manufacturer} - {device.name} - {device.serialNumber}");
+            }
+        }
+
+        private void OnDeviceDisconnected(InputDevice device)
+        {
+            // If this is the same device we are tracking, reset it to make it invalid.
+            if (m_device.isValid && m_device.serialNumber == device.serialNumber)
+            {
+                m_device = new InputDevice(); // reset
+                IsTrackedObjectValid = false;
+                Debug.Log($"XrController disconnected: {device.manufacturer} - {device.name} - {device.serialNumber}");
             }
         }
 

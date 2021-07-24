@@ -201,12 +201,13 @@ namespace TiltBrush
         private void OnEnable()
         {
             InputDevices.deviceConnected += OnDeviceConnected;
-            // TODO-XR - OnDeviceDisconnected
+            InputDevices.deviceDisconnected += OnDeviceDisconnected;
         }
 
         private void OnDisable()
         {
             InputDevices.deviceConnected -= OnDeviceConnected;
+            InputDevices.deviceDisconnected -= OnDeviceDisconnected;
         }
 
         void Awake()
@@ -334,6 +335,11 @@ namespace TiltBrush
                 m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
             }
 
+            if (m_overlay == null && App.Config.m_SdkMode == SdkMode.Monoscopic && m_MobileOverlayPrefab != null)
+            {
+                m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
+            }
+
             m_overlay?.Initialise();
         }
 
@@ -421,6 +427,18 @@ namespace TiltBrush
             {
                 m_Headset = device;
                 Debug.Log($"Headset connected: {device.manufacturer}, {HeadsetDeviceName}");
+            }
+        }
+
+        private void OnDeviceDisconnected(InputDevice device)
+        {
+            const InputDeviceCharacteristics kHeadset =
+                InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice;
+
+            if (device.isValid && (device.characteristics & kHeadset) == kHeadset && m_Headset.name == device.name)
+            {
+                Debug.Log($"Headset disconnected: {device.manufacturer}, {device.name}");
+                m_Headset = new InputDevice();
             }
         }
 
