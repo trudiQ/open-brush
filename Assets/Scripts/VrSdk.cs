@@ -231,9 +231,12 @@ namespace TiltBrush
                             // adding components to the VR Camera needed for fading view and getting controller poses.
                             m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
                             m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
+                            
+                            //Add an OVRCameraRig to the VrSystem for Mixed Reality Capture.
+                            var cameraRig = m_VrSystem.AddComponent<OVRCameraRig>();
+                            //Disable the OVRCameraRig's eye cameras, since Open Brush already has its own.
+                            cameraRig.disableEyeAnchorCameras = true;
                         }
-
-                        gameObject.AddComponent<OculusMRCCameraUpdate>();
 #endif // OCULUS_SUPPORTED
                         break;
                     }
