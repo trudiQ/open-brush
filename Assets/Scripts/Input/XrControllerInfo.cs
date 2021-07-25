@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -25,7 +24,10 @@ namespace TiltBrush
     {
         private InputDeviceCharacteristics m_characteristics;
         private InputDevice m_device;
-        private uint m_currInputState = 0u, m_prevInputState = 0u;
+        private uint m_currInputState = 0u;
+        private uint m_prevInputState = 0u;
+
+        private const float kDeadzoneTolerance = 0.01f;
 
         public override bool IsTrackedObjectValid { get; set; }
 
@@ -57,7 +59,8 @@ namespace TiltBrush
         private void OnDeviceDisconnected(InputDevice device)
         {
             // If this is the same device we are tracking, reset it to make it invalid.
-            if (m_device.isValid && m_device.serialNumber == device.serialNumber)
+            if (m_device.isValid && (device.characteristics & m_characteristics) == m_characteristics
+                && device.name == m_device.name && device.serialNumber == m_device.serialNumber)
             {
                 m_device = new InputDevice(); // reset
                 IsTrackedObjectValid = false;
@@ -97,15 +100,10 @@ namespace TiltBrush
             m_currInputState = 0u;
         }
 
+        // TODO: Do we need this, and GetTriggerValue() ?
         public override float GetTriggerRatio()
         {
-            float value;
-            if (m_device.isValid && m_device.TryGetFeatureValue(CommonUsages.trigger, out value))
-            {
-                return value;
-            }
-
-            return 0;
+            return GetTriggerValue();
         }
 
         public override Vector2 GetPadValue()
@@ -160,7 +158,8 @@ namespace TiltBrush
             float value;
             if (m_device.isValid && m_device.TryGetFeatureValue(CommonUsages.trigger, out value))
             {
-                return value;
+                // If we don't have a deadzone the trigger can return very small values that leave the tools latched on.
+                return value <= kDeadzoneTolerance ? 0.0f : value;
             }
 
             return 0.0f;
@@ -309,7 +308,7 @@ namespace TiltBrush
             if (GetVrInput(input))
             {
                 m_currInputState |= flag;
-                return (m_prevInputState & flag) == 0;
+                return true; // (m_prevInputState & flag) == 0;
             }
 
             return false;
