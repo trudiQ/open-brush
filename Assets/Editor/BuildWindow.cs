@@ -67,7 +67,7 @@ namespace TiltBrush
             public bool Succeeded { get; private set; }
             public bool Running
             {
-                get { return m_future != null; }
+                get => m_future != null;
             }
             public bool HasRun { get; private set; }
             public DateTime FinishTime { get; private set; }
@@ -222,26 +222,52 @@ namespace TiltBrush
         private int? m_buildLogPosition;
         private System.IntPtr m_hwnd;
         private DateTime m_buildCompleteTime;
-        private static string m_adbPath;
 
-        private bool AndroidConnected
+        private static string m_adbPath;
+        private static string AdbPath
         {
             get
             {
-                return !string.IsNullOrEmpty(m_selectedAndroid) && m_androidDevices.Length > 0;
+                if (string.IsNullOrEmpty(m_adbPath))
+                {
+#if UNITY_EDITOR_WIN
+                    m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb.exe");
+#else
+                    m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb");
+#endif
+                }
+
+                return m_adbPath;
             }
+        }
+        private static bool AdbExists
+        {
+            get
+            {
+                string path = AdbPath;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    return File.Exists(path);
+                }
+                return false;
+            }
+        }
+
+        private bool AndroidConnected
+        {
+            get => !string.IsNullOrEmpty(m_selectedAndroid) && m_androidDevices.Length > 0;
         }
 
         private bool UploadAfterBuild
         {
-            get { return EditorPrefs.GetBool(kAutoUploadAfterBuild, false); }
-            set { EditorPrefs.SetBool(kAutoUploadAfterBuild, value); }
+            get => EditorPrefs.GetBool(kAutoUploadAfterBuild, false);
+            set => EditorPrefs.SetBool(kAutoUploadAfterBuild, value);
         }
 
         private bool RunAfterUpload
         {
-            get { return EditorPrefs.GetBool(kAutoRunAfterUpload, false); }
-            set { EditorPrefs.SetBool(kAutoRunAfterUpload, value); }
+            get => EditorPrefs.GetBool(kAutoRunAfterUpload, false);
+            set => EditorPrefs.SetBool(kAutoRunAfterUpload, value);
         }
 
         [MenuItem("Tilt/Build/Build Window", false, 1)]
@@ -482,7 +508,7 @@ namespace TiltBrush
         private void DeviceGui()
         {
             // Show the devices supported by Unity XR.
-            using (var unused = new HeaderedVerticalLayout("Supported Devices"))
+            using (var unused = new HeaderedVerticalLayout("Supported XR Devices"))
             {
                 EditorGUILayout.LabelField(
                     "XR Plugin Devices", string.Join(", ", XRSettings.supportedDevices),
@@ -492,21 +518,21 @@ namespace TiltBrush
             }
 
             // TODO-XR - Do we still need this?
-            if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
-            {
-                using (var droids = new HeaderedVerticalLayout("Android devices"))
-                {
-                    foreach (string device in m_androidDevices)
-                    {
-                        bool selected = device == m_selectedAndroid;
-                        bool newSelected = GUILayout.Toggle(selected, device);
-                        if (selected != newSelected)
-                        {
-                            m_selectedAndroid = device;
-                        }
-                    }
-                }
-            }
+            // if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
+            // {
+            //     using (var droids = new HeaderedVerticalLayout("Android devices"))
+            //     {
+            //         foreach (string device in m_androidDevices)
+            //         {
+            //             bool selected = device == m_selectedAndroid;
+            //             bool newSelected = GUILayout.Toggle(selected, device);
+            //             if (selected != newSelected)
+            //             {
+            //                 m_selectedAndroid = device;
+            //             }
+            //         }
+            //     }
+            // }
 
         }
 
@@ -515,19 +541,18 @@ namespace TiltBrush
             using (var builds = new HeaderedVerticalLayout("Build"))
             {
                 EditorGUILayout.LabelField("Build Path", m_currentBuildPath);
-#if !UNITY_ANDROID
-                // A reminder that UNITY_ANDROID needs to be defined so that adb path is set and we can build Android.
-                if (BuildTiltBrush.GetGuiOptions().Target == BuildTarget.Android)
+
+                // Android specific information
+                if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
                 {
-                    EditorGUILayout.LabelField("Adb", "UNITY_ANDROID is not defined");
+                    if (!String.IsNullOrEmpty(AdbPath))
+                    {
+                        EditorGUILayout.LabelField("Adb Path", m_adbPath);
+                        if (!File.Exists(m_adbPath))
+                            EditorGUILayout.LabelField("Adb status", "ADB not found in expected path.");
+                    }
                 }
-#endif
-                if (!String.IsNullOrEmpty(m_adbPath))
-                {
-                    EditorGUILayout.LabelField("Adb Path", m_adbPath);
-                    if (!File.Exists(m_adbPath))
-                        EditorGUILayout.LabelField("Adb status", "ADB not found in expected path.");
-                }
+
                 if (m_currentBuildTime.HasValue)
                 {
                     TimeSpan age = DateTime.Now - m_currentBuildTime.Value;
@@ -588,17 +613,6 @@ namespace TiltBrush
         private void OnBuildSettingsChanged()
         {
             // Only set this if supporting SDK that needs Android (and is installed!).
-#if UNITY_ANDROID
-#if UNITY_EDITOR_WIN
-            string adbExe = "adb.exe";
-#else
-            string adbExe = "adb";
-#endif
-            // If we're on Android cache the path to adb as it used during building. Need to do it pre-work so on main thread.
-            m_adbPath = BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android
-                ? Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", adbExe)
-                : null;
-#endif
 
             m_currentBuildPath = BuildTiltBrush.GetAppPathForGuiBuild();
             if (File.Exists(m_currentBuildPath))
@@ -664,16 +678,20 @@ namespace TiltBrush
 
         public static string[] RunAdb(params string[] arguments)
         {
-            var process = new System.Diagnostics.Process();
-            process.StartInfo =
-                new System.Diagnostics.ProcessStartInfo(m_adbPath, String.Join(" ", arguments));
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.Start();
-            process.WaitForExit();
-            return process.StandardOutput.ReadToEnd().Split('\n').Concat(process.StandardError.ReadToEnd().Split('\n')).ToArray();
+            if (AdbExists)
+            {
+                var process = new System.Diagnostics.Process();
+                process.StartInfo = new System.Diagnostics.ProcessStartInfo(AdbPath, String.Join(" ", arguments));
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.Start();
+                process.WaitForExit();
+                return process.StandardOutput.ReadToEnd().Split('\n').Concat(process.StandardError.ReadToEnd().Split('\n')).ToArray();
+            }
+
+            return null;
         }
 
         private void Update()
@@ -773,11 +791,8 @@ namespace TiltBrush
 
         private float SuccessfulBuildSeconds
         {
-            get { return EditorPrefs.GetFloat(kSuccessfulBuildTime, 300); }
-            set
-            {
-                EditorPrefs.SetFloat(kSuccessfulBuildTime, Mathf.Lerp(value, SuccessfulBuildSeconds, 0.8f));
-            }
+            get => EditorPrefs.GetFloat(kSuccessfulBuildTime, 300);
+            set => EditorPrefs.SetFloat(kSuccessfulBuildTime, Mathf.Lerp(value, SuccessfulBuildSeconds, 0.8f));
         }
 
         private DateTime BuildStartTime
@@ -791,10 +806,7 @@ namespace TiltBrush
                 }
                 return DateTime.Parse(datetimeString);
             }
-            set
-            {
-                EditorPrefs.SetString(kBuildStartTime, value.ToString());
-            }
+            set => EditorPrefs.SetString(kBuildStartTime, value.ToString());
         }
 
 #if UNITY_EDITOR_WIN
