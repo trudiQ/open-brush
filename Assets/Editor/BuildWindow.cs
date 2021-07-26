@@ -293,6 +293,8 @@ namespace TiltBrush
 
         private void OnGUI()
         {
+            var adb = AdbPath; // Ensure m_adbPath set on main thread.
+
             EditorGUILayout.BeginVertical();
 
             BuildSetupGui();
