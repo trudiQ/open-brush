@@ -39,48 +39,26 @@ namespace TiltBrush
 
     // All of the details required to build for a distribution.
     //  - We may want to specialise things like store or analytics features.
-    public abstract class Distribution
-    {
-        public Build Build;
-        public Sdk Sdk;
-    }
+    // public abstract class Distribution
+    // {
+    //     // public Build Build;
+    //     // public Sdk Sdk;
+    // }
 
-    public abstract class Build
-    {
-        // The vendor name - used for naming android builds - shouldn't have spaces.
-        public const string kVendorName = "Icosa";
-        // The vendor name - used for the company name in builds and fbx output. Can have spaces.
-        public const string kDisplayVendorName = "Icosa";
+    // public abstract class Sdk
+    // {
+    // }
 
-        // Executable Base
-        public const string kGuiBuildExecutableName = "OpenBrush";
-        // Windows Executable
-        public const string kGuiBuildWindowsExecutableName = kGuiBuildExecutableName + ".exe";
-        // Linux Executable
-        public const string kGuiBuildLinuxExecutableName = kGuiBuildExecutableName;
-        // OSX Executable
-        public const string kGuiBuildOSXExecutableName = kGuiBuildExecutableName + ".app";
-        // Android Application Identifier
-        public const string kGuiBuildAndroidApplicationIdentifier = "com." + kVendorName + "." + kGuiBuildExecutableName;
-        // Android Executable
-        public const string kGuiBuildAndroidExecutableName = kGuiBuildAndroidApplicationIdentifier + ".apk";
+    // public abstract class Device
+    // {
+    //     private OverlayImplementation m_overlay;
+    //     private List<Controller> m_controllers = new List<Controller>();
+    // }
 
-    }
-
-    public abstract class Sdk
-    {
-    }
-
-    public abstract class Device
-    {
-        private OverlayImplementation m_overlay;
-        private List<Controller> m_controllers = new List<Controller>();
-    }
-
-    public abstract class Controller
-    {
-
-    }
+    // public abstract class Controller
+    // {
+    //
+    // }
 
 
     // If these names are used in analytics etc, they must be protected from obfuscation.
@@ -231,7 +209,7 @@ namespace TiltBrush
                             // adding components to the VR Camera needed for fading view and getting controller poses.
                             m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
                             m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
-                            
+
                             //Add an OVRCameraRig to the VrSystem for Mixed Reality Capture.
                             var cameraRig = m_VrSystem.AddComponent<OVRCameraRig>();
                             //Disable the OVRCameraRig's eye cameras, since Open Brush already has its own.

@@ -36,9 +36,6 @@ using Environment = System.Environment;
 //      - Oculus is an optional target. Define this flag to add Oculus targets.
 //      - Also need to import Oculus Integration from the Unity Asset Store (don't need any samples).
 //
-//  - UNITY_ANDROID
-//      - This needs to be defined to build Android targets, which includes the mobile devices.
-//
 //----------------------------------------------------------------------------------------
 
 // All output from this class is prefixed with "_btb_" to facilitate extracting
@@ -46,6 +43,25 @@ using Environment = System.Environment;
 static class BuildTiltBrush
 {
     // Types, consts, enums
+
+    // The vendor name - used for naming android builds - shouldn't have spaces.
+    public const string kVendorName = "icosa";
+    // The vendor name - used for the company name in builds and fbx output. Can have spaces.
+    public const string kDisplayVendorName = "Icosa";
+
+    // Executable Base
+    public const string kGuiBuildExecutableName = "OpenBrush";
+    // Windows Executable
+    public const string kGuiBuildWindowsExecutableName = kGuiBuildExecutableName + ".exe";
+    // Linux Executable
+    public const string kGuiBuildLinuxExecutableName = kGuiBuildExecutableName;
+    // OSX Executable
+    public const string kGuiBuildOsxExecutableName = kGuiBuildExecutableName + ".app";
+    // Android Application Identifier
+    public static string GuiBuildAndroidApplicationIdentifier => $"com.{kVendorName}.{kGuiBuildExecutableName.ToLowerInvariant()}";
+    // Android Executable
+    public static string GuiBuildAndroidExecutableName => GuiBuildAndroidApplicationIdentifier + ".apk";
+
 
     public class TiltBuildOptions
     {
@@ -327,24 +343,24 @@ static class BuildTiltBrush
             GuiExperimental ? "_Experimental" : "",
             GuiRuntimeIl2cpp ? "_Il2cpp" : "",
             GuiAutoProfile ? "_AutoProfile" : "",
-            Build.kGuiBuildExecutableName);
+            kGuiBuildExecutableName);
         var location = Path.GetDirectoryName(Path.GetDirectoryName(Application.dataPath));
 
         location = Path.Combine(Path.Combine(location, "Builds"), directoryName);
         switch (buildTarget)
         {
             case BuildTarget.Android:
-                location += "/" + Build.kGuiBuildAndroidExecutableName;
+                location += "/" + GuiBuildAndroidExecutableName;
                 break;
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                location += "/" + Build.kGuiBuildWindowsExecutableName;
+                location += "/" + kGuiBuildWindowsExecutableName;
                 break;
             case BuildTarget.StandaloneLinux64:
-                location += "/" + Build.kGuiBuildLinuxExecutableName;
+                location += "/" + kGuiBuildLinuxExecutableName;
                 break;
             case BuildTarget.StandaloneOSX:
-                location += "/" + Build.kGuiBuildOSXExecutableName;
+                location += "/" + kGuiBuildOsxExecutableName;
                 break;
             default:
                 throw new BuildFailedException("Unsupported BuildTarget: " + buildTarget.ToString());
@@ -926,7 +942,7 @@ static class BuildTiltBrush
             m_name = PlayerSettings.productName;
             m_company = PlayerSettings.companyName;
             string new_name = App.kAppDisplayName;
-            string new_identifier = Build.kGuiBuildAndroidApplicationIdentifier;
+            string new_identifier = GuiBuildAndroidApplicationIdentifier;
             if (!String.IsNullOrEmpty(Description))
             {
                 new_name += " (" + Description + ")";
@@ -937,7 +953,7 @@ static class BuildTiltBrush
                 PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, new_identifier);
             }
             PlayerSettings.productName = new_name;
-            PlayerSettings.companyName = Build.kDisplayVendorName;
+            PlayerSettings.companyName = kDisplayVendorName;
         }
 
         public void Dispose()
@@ -1080,8 +1096,7 @@ static class BuildTiltBrush
     {
         private string m_tempCopy;
 
-        public static TempCopyToStreamingAssets Create(
-            BuildTarget target, IEnumerable<CopyRequest> requests)
+        public static TempCopyToStreamingAssets Create(BuildTarget target, IEnumerable<CopyRequest> requests)
         {
             if (target == BuildTarget.Android)
             {
@@ -1476,19 +1491,15 @@ static class BuildTiltBrush
                         {
                             FileUtil.DeleteFileOrDirectory(openvrDll64);
                         }
-                    }
 
-                    // b/120917711
-                    {
-                        string audioPluginOculusSpatializer = Path.Combine(
-                            Path.Combine(dataDir, "Plugins"), "AudioPluginOculusSpatializer.dll");
-                        if (File.Exists(audioPluginOculusSpatializer))
+
+                        string audioPluginOculusSpatializer = Path.Combine(Path.Combine(dataDir, "Plugins"), "AudioPluginOculusSpatializer.dll");
+                        if (!File.Exists(audioPluginOculusSpatializer))
                         {
-                            throw new BuildFailedException(
-                                string.Format(
-                                    "{0} should not be in the build. Either remove it from Assets/; or if it's now needed (and is safe) then remove this logic", audioPluginOculusSpatializer));
+                            throw new BuildFailedException($"{audioPluginOculusSpatializer} should be in the build.");
                         }
                     }
+
 
                     break;
                 }
