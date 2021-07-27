@@ -224,22 +224,8 @@ namespace TiltBrush
         private DateTime m_buildCompleteTime;
 
         private static string m_adbPath;
-        private static string AdbPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(m_adbPath))
-                {
-#if UNITY_EDITOR_WIN
-                    m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb.exe");
-#else
-                    m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb");
-#endif
-                }
+        private static string AdbPath => m_adbPath;
 
-                return m_adbPath;
-            }
-        }
         private static bool AdbExists
         {
             get
@@ -273,6 +259,15 @@ namespace TiltBrush
         [MenuItem("Tilt/Build/Build Window", false, 1)]
         public static void CreateWindow()
         {
+            if (string.IsNullOrEmpty(m_adbPath))
+            {
+#if UNITY_EDITOR_WIN
+                m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb.exe");
+#else
+                m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb");
+#endif
+            }
+
             BuildWindow window = EditorWindow.GetWindow<BuildWindow>();
             window.Show();
         }
@@ -293,8 +288,6 @@ namespace TiltBrush
 
         private void OnGUI()
         {
-            var adb = AdbPath; // Ensure m_adbPath set on main thread.
-
             EditorGUILayout.BeginVertical();
 
             BuildSetupGui();
