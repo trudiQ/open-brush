@@ -165,7 +165,6 @@ namespace TiltBrush
                 {
                     // check headset registered.
                     // Note: This is update during/after Awake(), so cannot be used reliably until Start().
-                    Debug.Assert(App.VrSdk.HeadsetDevice.isValid);
 
                     // Decide which hardware we are using by the headset.
                     var device = App.VrSdk.HeadsetDevice;
@@ -255,11 +254,7 @@ namespace TiltBrush
             // Only sadness will ensue if the user tries to set Override.MobileHardware=true
             // but their editor platform is still set to Windows.
 #if UNITY_EDITOR && UNITY_ANDROID
-            get
-            {
-                return Application.platform == RuntimePlatform.Android
-                    || SpoofMobileHardware.MobileHardware;
-            }
+            get => Application.platform == RuntimePlatform.Android || SpoofMobileHardware.MobileHardware;
 #else
             get => Application.platform == RuntimePlatform.Android;
 #endif
@@ -802,51 +797,6 @@ namespace TiltBrush
 #if UNITY_EDITOR
         public void OnValidate()
         {
-            // This is now getting run when entering playmode.
-            // Unity doesn't allow VR SDKs to change at runtime.
-            if (UnityEditor.EditorApplication.isPlaying)
-            {
-                return;
-            }
-
-            bool useVrSdk = m_SdkMode == SdkMode.Oculus
-                || m_SdkMode == SdkMode.SteamVR
-                || m_SdkMode == SdkMode.Gvr;
-
-            // Writing to this sets the scene-dirty flag, so don't do it unless necessary
-            if (UnityEditor.PlayerSettings.virtualRealitySupported != useVrSdk)
-            {
-                UnityEditor.PlayerSettings.virtualRealitySupported = useVrSdk;
-            }
-
-            // This hotswaps vr sdks based on selection.
-            var buildTargetGroups = new List<UnityEditor.BuildTargetGroup>();
-            string[] newDevices;
-            switch (m_SdkMode)
-            {
-                case SdkMode.Gvr:
-                    newDevices = new string[] { "daydream" };
-                    buildTargetGroups.Add(UnityEditor.BuildTargetGroup.Android);
-                    break;
-                case SdkMode.Oculus:
-                    newDevices = new string[] { "Oculus" };
-                    buildTargetGroups.Add(UnityEditor.BuildTargetGroup.Android);
-                    buildTargetGroups.Add(UnityEditor.BuildTargetGroup.Standalone);
-                    break;
-                case SdkMode.SteamVR:
-                    newDevices = new string[] { "OpenVR" };
-                    buildTargetGroups.Add(UnityEditor.BuildTargetGroup.Standalone);
-                    break;
-                default:
-                    newDevices = new string[] { "" };
-                    break;
-            }
-
-            foreach (var group in buildTargetGroups)
-            {
-                // TODO use the public api (see BuildTiltBrush)
-                UnityEditorInternal.VR.VREditor.SetVirtualRealitySDKs(group, newDevices);
-            }
         }
 
         /// Called at build time, just before this Config instance is saved to Main.unity
