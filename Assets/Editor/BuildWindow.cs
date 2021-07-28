@@ -686,7 +686,7 @@ namespace TiltBrush
                 return process.StandardOutput.ReadToEnd().Split('\n').Concat(process.StandardError.ReadToEnd().Split('\n')).ToArray();
             }
 
-            return null;
+            return new string[] { "" };
         }
 
         private void Update()
