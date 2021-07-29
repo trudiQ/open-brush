@@ -310,13 +310,11 @@ namespace TiltBrush
                 m_overlay = new OculusOverlay(m_VrSystem);
             }
 #endif // OCULUS_SUPPORTED
-
-            if (m_overlay == null && App.Config.m_SdkMode == SdkMode.UnityXr && m_MobileOverlayPrefab != null)
+            else if (App.Config.m_SdkMode == SdkMode.UnityXr && m_MobileOverlayPrefab != null)
             {
                 m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
             }
-
-            if (m_overlay == null && App.Config.m_SdkMode == SdkMode.Monoscopic && m_MobileOverlayPrefab != null)
+            else if (App.Config.m_SdkMode == SdkMode.Monoscopic && m_MobileOverlayPrefab != null)
             {
                 m_overlay = new MobileOverlay(m_MobileOverlayPrefab, m_VrCamera);
             }
@@ -407,7 +405,7 @@ namespace TiltBrush
             if (device.isValid && (device.characteristics & kHeadset) == kHeadset)
             {
                 m_Headset = device;
-                Debug.Log($"Headset connected: {device.manufacturer}, {HeadsetDeviceName}");
+                App.Log($"Headset connected: {device.manufacturer}, {HeadsetDeviceName}");
             }
         }
 
@@ -418,7 +416,7 @@ namespace TiltBrush
 
             if (device.isValid && (device.characteristics & kHeadset) == kHeadset && m_Headset.name == device.name)
             {
-                Debug.Log($"Headset disconnected: {device.manufacturer}, {device.name}");
+                App.Log($"Headset disconnected: {device.manufacturer}, {device.name}");
                 m_Headset = new InputDevice();
             }
         }

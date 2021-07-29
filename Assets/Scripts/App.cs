@@ -156,6 +156,16 @@ namespace TiltBrush
             }
         }
 
+        // Log to editor console when developing and console log when running. This avoids all the stack spam in the log.
+        public static void Log(string msg)
+        {
+#if UNITY_EDITOR
+            Debug.Log(msg);
+#else
+            Console.WriteLine(msg);
+#endif
+        }
+
         // ------------------------------------------------------------
         // Events
         // ------------------------------------------------------------
@@ -467,7 +477,7 @@ namespace TiltBrush
                 str += $" build {Config.m_BuildStamp}";
 
 #if UNITY_ANDROID
-            str += string.Format(" code {0}", AndroidUtils.GetVersionCode());
+            str += $" code {AndroidUtils.GetVersionCode()}";
 #endif
 #if DEBUG
             str += $" {PlatformConfig.name}";
@@ -478,9 +488,8 @@ namespace TiltBrush
         void Awake()
         {
             m_Instance = this;
-            Debug.Log(GetStartupString());
-
-            Debug.Log($"SdkMode: {App.Config.m_SdkMode}, ControllerMode: {App.Config.ControllerMode}.");
+            Log(GetStartupString());
+            Log($"SdkMode: {App.Config.m_SdkMode}, ControllerMode: {App.Config.ControllerMode}.");
 
             // Begone, physics! You were using 0.3 - 1.3ms per frame on Quest!
             Physics.autoSimulation = false;

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -52,7 +53,7 @@ namespace TiltBrush
             if (!m_device.isValid && (device.characteristics & m_characteristics) == m_characteristics)
             {
                 m_device = device;
-                Debug.Log($"XrController connected: {device.manufacturer} - {device.name} - {device.serialNumber}");
+                App.Log($"XrController connected: {device.manufacturer} - {device.name} - {device.serialNumber}");
             }
         }
 
@@ -64,7 +65,7 @@ namespace TiltBrush
             {
                 m_device = new InputDevice(); // reset
                 IsTrackedObjectValid = false;
-                Debug.Log($"XrController disconnected: {device.manufacturer} - {device.name} - {device.serialNumber}");
+                App.Log($"XrController disconnected: {device.manufacturer} - {device.name} - {device.serialNumber}");
             }
         }
 
@@ -225,8 +226,7 @@ namespace TiltBrush
                             return true;
                         break;
                     default:
-                        Debug.Assert(false, $"Invalid touch button enum: {input.ToString()}");
-                        break;
+                        throw new NotImplementedException($"Invalid touch button enum: {input.ToString()}");
                 }
 
             }
@@ -295,6 +295,8 @@ namespace TiltBrush
                         if (m_device.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out value) && value)
                             return true;
                         break;
+                    default:
+                        throw new NotImplementedException($"Invalid button enum: {input.ToString()}");
                 }
             }
 
@@ -316,6 +318,7 @@ namespace TiltBrush
 
         public override void TriggerControllerHaptics(float seconds)
         {
+            // TODO-XR - Do controller haptics!
         }
     }
 }
