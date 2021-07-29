@@ -26,7 +26,9 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.iOS.Xcode;
 #endif
 using UnityEditor.SceneManagement;
+using UnityEditor.XR.Management;
 using UnityEngine;
+using UnityEngine.XR.Management;
 using Environment = System.Environment;
 
 //----------------------------------------------------------------------------------------
@@ -34,7 +36,6 @@ using Environment = System.Environment;
 //
 //  - OCULUS_SUPPORTED
 //      - Oculus is an optional target. Define this flag to add Oculus targets.
-//      - Also need to import Oculus Integration from the Unity Asset Store (don't need any samples).
 //
 //----------------------------------------------------------------------------------------
 
@@ -164,10 +165,7 @@ static class BuildTiltBrush
 
     public static bool BackgroundBuild
     {
-        get
-        {
-            return EditorPrefs.GetBool(kMenuBackgroundBuild, false);
-        }
+        get => EditorPrefs.GetBool(kMenuBackgroundBuild, false);
         set
         {
             EditorPrefs.SetBool(kMenuBackgroundBuild, value);
@@ -235,10 +233,7 @@ static class BuildTiltBrush
     // Gui setting for "Experimental" checkbox
     public static bool GuiExperimental
     {
-        get
-        {
-            return EditorPrefs.GetBool(kMenuExperimental, false);
-        }
+        get => EditorPrefs.GetBool(kMenuExperimental, false);
         set
         {
             EditorPrefs.SetBool(kMenuExperimental, value);
@@ -249,10 +244,7 @@ static class BuildTiltBrush
     // Gui setting for "Development" checkbox
     public static bool GuiDevelopment
     {
-        get
-        {
-            return EditorPrefs.GetBool(kMenuDevelopment, false);
-        }
+        get => EditorPrefs.GetBool(kMenuDevelopment, false);
         set
         {
             EditorPrefs.SetBool(kMenuDevelopment, value);
@@ -263,7 +255,7 @@ static class BuildTiltBrush
     // Gui setting for "Auto Profile" checkbox
     public static bool GuiAutoProfile
     {
-        get { return EditorPrefs.GetBool(kMenuAutoProfile, false); }
+        get => EditorPrefs.GetBool(kMenuAutoProfile, false);
         set
         {
             EditorPrefs.SetBool(kMenuAutoProfile, value);
@@ -273,7 +265,7 @@ static class BuildTiltBrush
 
     public static bool GuiRuntimeIl2cpp
     {
-        get { return EditorPrefs.GetBool(kMenuIl2cpp, false); }
+        get => EditorPrefs.GetBool(kMenuIl2cpp, false);
         set
         {
             EditorPrefs.SetBool(kMenuIl2cpp, value);
@@ -328,13 +320,10 @@ static class BuildTiltBrush
     public static string GetAppPathForGuiBuild()
     {
         BuildTarget buildTarget = GuiSelectedBuildTarget;
+
         string sdk = GuiSelectedSdk.ToString();
-        if (GuiSelectedSdk == SdkMode.Oculus)
-        {
-            sdk = GuiSelectedBuildTarget == BuildTarget.Android
-                ? "OculusMobile"
-                : "Oculus";
-        }
+        if (GuiSelectedBuildTarget == BuildTarget.Android)
+            sdk += "Mobile";
 
         var directoryName = string.Format(
             "{0}_{1}_{5}{2}{3}{4}_FromGui",
@@ -604,7 +593,7 @@ static class BuildTiltBrush
         }
     }
 
-    static public BuildTargetGroup ToGroup(BuildTarget buildTarget)
+    static public BuildTargetGroup TargetToGroup(BuildTarget buildTarget)
     {
         switch (buildTarget)
         {
@@ -861,7 +850,7 @@ static class BuildTiltBrush
         // For convenience, the extra symbols can be "" or null
         public TempDefineSymbols(BuildTarget target, params string[] symbols)
         {
-            m_group = BuildTiltBrush.ToGroup(target);
+            m_group = BuildTiltBrush.TargetToGroup(target);
             m_prevSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(m_group);
             var newSymbols = m_prevSymbols.Split(';') // might be [""]
                 .Concat(symbols.Where(elt => elt != null))
@@ -886,7 +875,7 @@ static class BuildTiltBrush
 
         public TempSetScriptingBackend(BuildTarget target, bool useIl2cpp)
         {
-            m_group = BuildTiltBrush.ToGroup(target);
+            m_group = BuildTiltBrush.TargetToGroup(target);
             m_prevbackend = PlayerSettings.GetScriptingBackend(m_group);
 
             // Build script assumes there are only 2 possibilities. It's been true so far,
@@ -1431,6 +1420,29 @@ static class BuildTiltBrush
         // programmatically. Either AssetDatabase.SaveAssets() doesn't also
         // save ProjectSettings.asset; or doing it here isn't late enough.
         // AssetDatabase.SaveAssets();
+    }
+
+    // Get XR Plugins for selected build target.
+    public static string GetXrPlugins()
+    {
+        var grp = BuildTiltBrush.TargetToGroup(GuiSelectedBuildTarget);
+
+        XRGeneralSettings settings = XRGeneralSettingsPerBuildTarget.XRGeneralSettingsForBuildTarget(grp);
+        if (settings == null)
+            return "Not using XR";
+
+        var count = settings.Manager.activeLoaders.Count;
+        if (count == 0)
+            return "No XR plugins selected";
+
+        string res = "";
+        for (int i = 0; i < settings.Manager.activeLoaders.Count; ++i)
+        {
+            if (i > 0)
+                res += ", ";
+            res += settings.Manager.activeLoaders[i].name;
+        }
+        return res;
     }
 
     // Returns null if no errors; otherwise a string with what went wrong.

@@ -505,29 +505,28 @@ namespace TiltBrush
             // Show the devices supported by Unity XR.
             using (var unused = new HeaderedVerticalLayout("Supported XR Devices"))
             {
+                EditorGUILayout.LabelField("XR Plugins Selected", BuildTiltBrush.GetXrPlugins());
+
                 EditorGUILayout.LabelField(
                     "XR Plugin Devices", string.Join(", ", XRSettings.supportedDevices),
                     EditorStyles.wordWrappedLabel);
-
-                // EditorGUILayout.LabelField("Loaded", XRSettings.loadedDeviceName);
             }
 
-            // TODO-XR - Do we still need this?
-            // if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
-            // {
-            //     using (var droids = new HeaderedVerticalLayout("Android devices"))
-            //     {
-            //         foreach (string device in m_androidDevices)
-            //         {
-            //             bool selected = device == m_selectedAndroid;
-            //             bool newSelected = GUILayout.Toggle(selected, device);
-            //             if (selected != newSelected)
-            //             {
-            //                 m_selectedAndroid = device;
-            //             }
-            //         }
-            //     }
-            // }
+            if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
+            {
+                using (var droids = new HeaderedVerticalLayout("Android devices"))
+                {
+                    foreach (string device in m_androidDevices)
+                    {
+                        bool selected = device == m_selectedAndroid;
+                        bool newSelected = GUILayout.Toggle(selected, device);
+                        if (selected != newSelected)
+                        {
+                            m_selectedAndroid = device;
+                        }
+                    }
+                }
+            }
 
         }
 
