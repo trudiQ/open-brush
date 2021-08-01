@@ -256,7 +256,7 @@ namespace TiltBrush
             set => EditorPrefs.SetBool(kAutoRunAfterUpload, value);
         }
 
-        [MenuItem("Tilt/Build/Build Window", false, 1)]
+        [MenuItem("OpenBrush/Build/Build Window", false, 1)]
         public static void CreateWindow()
         {
             if (string.IsNullOrEmpty(m_adbPath))
@@ -534,7 +534,7 @@ namespace TiltBrush
         {
             using (var builds = new HeaderedVerticalLayout("Build"))
             {
-                EditorGUILayout.LabelField("Build Path", m_currentBuildPath);
+                EditorGUILayout.LabelField("Build Output", m_currentBuildPath);
 
                 // Android specific information
                 if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)

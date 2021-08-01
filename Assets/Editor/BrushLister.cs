@@ -16,7 +16,7 @@ public class BrushLister : MonoBehaviour
     private static TiltBrushManifest brushManifest;
     private static TiltBrushManifest brushManifestX;
 
-    [MenuItem("Tilt/Info/Brush Lister")]
+    [MenuItem("OpenBrush/Info/Brush Lister")]
     static void ListBrushes()
     {
         brushList = new StringBuilder();

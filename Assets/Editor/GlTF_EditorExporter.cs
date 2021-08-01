@@ -79,7 +79,7 @@ namespace TiltBrush
             return Path.Combine(directoryName, basename);
         }
 
-        [MenuItem("Tilt/glTF/Sync Export Materials", false, 1)]
+        [MenuItem("OpenBrush/glTF/Sync Export Materials", false, 1)]
         private static void SyncExportMaterials()
         {
             string projectPath = Path.GetDirectoryName(Application.dataPath);
@@ -90,7 +90,7 @@ namespace TiltBrush
             GenerateShaders(manifestPath, exportRoot);
         }
 
-        [MenuItem("Tilt/glTF/Export Brush Strokes to glTF v1", false, 2)]
+        [MenuItem("OpenBrush/glTF/Export Brush Strokes to glTF v1", false, 2)]
         private static void ExportBrushStrokes_gltf1()
         {
             new ExportGlTF().ExportBrushStrokes(
@@ -102,7 +102,7 @@ namespace TiltBrush
                 includeLocalMediaContent: false);
         }
 
-        [MenuItem("Tilt/glTF/Export Brush Strokes to glb v1", false, 3)]
+        [MenuItem("OpenBrush/glTF/Export Brush Strokes to glb v1", false, 3)]
         private static void ExportBrushStrokes_glb1()
         {
             new ExportGlTF().ExportBrushStrokes(
@@ -114,14 +114,14 @@ namespace TiltBrush
                 includeLocalMediaContent: true);
         }
 
-        [MenuItem("Tilt/glTF/Export Brush Strokes to glTF v1", true)]
-        [MenuItem("Tilt/glTF/Export Brush Strokes to glb v1", true)]
+        [MenuItem("OpenBrush/glTF/Export Brush Strokes to glTF v1", true)]
+        [MenuItem("OpenBrush/glTF/Export Brush Strokes to glb v1", true)]
         private static bool ExportBrushStrokes_Enabled()
         {
             return Application.isPlaying;
         }
 
-        [MenuItem("Tilt/glTF/Export Environments to glTF", false, 4)]
+        [MenuItem("OpenBrush/glTF/Export Environments to glTF", false, 4)]
         private static void ExportEnvironments()
         {
 #if !GAMEOBJ_EXPORT_TO_GLTF
