@@ -173,6 +173,9 @@ static class BuildTiltBrush
         }
     }
 
+    private static string m_buildStatus = "-";
+    public static string BuildStatus => m_buildStatus; // info about current status
+
     // Gui setting for "Sdk" radio buttons
     public static SdkMode GuiSelectedSdk
     {
@@ -1205,6 +1208,8 @@ static class BuildTiltBrush
         SdkMode vrSdk = tiltOptions.VrSdk;
         BuildOptions options = tiltOptions.UnityOptions;
 
+        m_buildStatus = "Started build";
+
         // Add your new scenes in this List for your app.
         // During the build process the Scene List in the Build Settings is ignored.
         // Only the following scenes are included in the build.
@@ -1254,6 +1259,8 @@ static class BuildTiltBrush
 
             // Some sanity checks
             {
+                m_buildStatus = "Checking integrity";
+
                 var errors = new List<string>();
                 var locallyUniqueIds = new Dictionary<string, BrushDescriptor>();
                 var globallyUniqueIds = new Dictionary<System.Guid, BrushDescriptor>();
@@ -1342,9 +1349,11 @@ static class BuildTiltBrush
             }
 
             // Save our changes and notify the editor that there have been changes.
+            m_buildStatus = "Saving scene";
             EditorSceneManager.SaveOpenScenes();
 
             // If we're building android, we need to copy Support files into streaming assets
+            m_buildStatus = "Copying platform support files";
             using (var unused8 = TempCopyToStreamingAssets.Create(target, copyRequests))
             {
                 // When the editor log has not been redirected with -logFile, we copy the appropriate part
@@ -1373,13 +1382,14 @@ static class BuildTiltBrush
                     copyRequests = copyRequests
                 };
 
-                // The return value changed between 2017 and 2018
+                m_buildStatus = "Building player";
                 var thing = BuildPipeline.BuildPlayer(scenes, location, target, options);
                 string error = FormatBuildReport(thing);
                 if (!string.IsNullOrEmpty(error))
                 {
                     string message = $"BuildPipeline.BuildPlayer() returned: \"{error}\"";
                     Note(message);
+                    m_buildStatus = $"Build player failed: {error}";
                     throw new BuildFailedException(message);
                 }
                 else
@@ -1391,6 +1401,7 @@ static class BuildTiltBrush
                 // Now copy across the tail end of the editor log to Build.log, if required.
                 if (copyBuildLog)
                 {
+                    m_buildStatus = "Copying log";
                     string logPath = Path.Combine(buildDirectory, "Build.log");
                     File.Delete(logPath);
                     using (StreamWriter logWriter = new StreamWriter(logPath))
@@ -1420,6 +1431,8 @@ static class BuildTiltBrush
         // programmatically. Either AssetDatabase.SaveAssets() doesn't also
         // save ProjectSettings.asset; or doing it here isn't late enough.
         // AssetDatabase.SaveAssets();
+
+        m_buildStatus = "Finished";
     }
 
     // Get XR Plugins for selected build target.

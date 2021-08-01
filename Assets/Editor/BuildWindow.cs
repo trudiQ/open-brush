@@ -223,6 +223,8 @@ namespace TiltBrush
         private System.IntPtr m_hwnd;
         private DateTime m_buildCompleteTime;
 
+        private string CurrentBuildStatus => BuildTiltBrush.BuildStatus;
+
         private static string m_adbPath;
         private static string AdbPath => m_adbPath;
 
@@ -290,18 +292,18 @@ namespace TiltBrush
         {
             EditorGUILayout.BeginVertical();
 
-            BuildSetupGui();
+            MakeBuildConfigGui();
 
-            MakeBuildsGui();
+            MakeDeviceGui();
 
-            DeviceGui();
+            MakeBuildActionsGui();
 
-            BuildActionsGui();
+            MakeBuildStatusGui();
 
             EditorGUILayout.EndVertical();
         }
 
-        private void BuildSetupGui()
+        private void MakeBuildConfigGui()
         {
             GUILayoutOption[] options = new GUILayoutOption[]
             {
@@ -383,11 +385,9 @@ namespace TiltBrush
             }
         }
 
-
-
-        private void MakeBuildsGui()
+        private void MakeBuildActionsGui()
         {
-            using (var buildBar = new HeaderedVerticalLayout("Build"))
+            using (var buildBar = new HeaderedVerticalLayout("Build Actions"))
             {
                 using (var buttonBar = new GUILayout.HorizontalScope())
                 {
@@ -433,6 +433,23 @@ namespace TiltBrush
                 {
                     UploadAfterBuild = GUILayout.Toggle(UploadAfterBuild, "Upload after Build");
                     RunAfterUpload = GUILayout.Toggle(RunAfterUpload, "Run after Upload");
+                }
+                GUILayout.Space(12);
+
+                // Android support buttons
+                if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android && !string.IsNullOrEmpty(m_adbPath))
+                {
+                    using (var buildBar2 = new HeaderedVerticalLayout("Android Actions"))
+                    {
+                        GUI.enabled = AndroidConnected && !BuildTiltBrush.DoingBackgroundBuild;
+                        m_upload.OnGUI();
+                        m_launch.OnGUI();
+                        m_turnOnAdbDebugging.OnGUI();
+                        m_launchWithProfile.OnGUI();
+                        m_terminate.OnGUI();
+                        GUI.enabled = true;
+
+                    }
                 }
 
                 int start = Mathf.Clamp(m_buildLog.Count - 11, 0, int.MaxValue);
@@ -500,7 +517,7 @@ namespace TiltBrush
             m_buildLog.Clear();
         }
 
-        private void DeviceGui()
+        private void MakeDeviceGui()
         {
             // Show the devices supported by Unity XR.
             using (var unused = new HeaderedVerticalLayout("Supported XR Devices"))
@@ -530,18 +547,20 @@ namespace TiltBrush
 
         }
 
-        private void BuildActionsGui()
+        private void MakeBuildStatusGui()
         {
-            using (var builds = new HeaderedVerticalLayout("Build"))
+            using (var builds = new HeaderedVerticalLayout("Build Status"))
             {
+                EditorGUILayout.LabelField("Status", CurrentBuildStatus);
+
                 EditorGUILayout.LabelField("Build Output", m_currentBuildPath);
 
                 // Android specific information
                 if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
                 {
+                    EditorGUILayout.LabelField("Adb Path", m_adbPath ?? "Unset");
                     if (!String.IsNullOrEmpty(AdbPath))
                     {
-                        EditorGUILayout.LabelField("Adb Path", m_adbPath);
                         if (!File.Exists(m_adbPath))
                             EditorGUILayout.LabelField("Adb status", "ADB not found in expected path.");
                     }
@@ -557,17 +576,6 @@ namespace TiltBrush
                     if (age.Minutes > 0) { textAge.AppendFormat("{0}m ", age.Minutes); }
                     textAge.AppendFormat("{0}s", age.Seconds);
                     EditorGUILayout.LabelField("Age", textAge.ToString());
-
-                    if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
-                    {
-                        GUI.enabled = AndroidConnected && !BuildTiltBrush.DoingBackgroundBuild;
-                        m_upload.OnGUI();
-                        m_launch.OnGUI();
-                        m_turnOnAdbDebugging.OnGUI();
-                        m_launchWithProfile.OnGUI();
-                        m_terminate.OnGUI();
-                        GUI.enabled = true;
-                    }
                 }
                 else
                 {
