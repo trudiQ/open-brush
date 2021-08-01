@@ -225,14 +225,11 @@ namespace TiltBrush
 
         private string CurrentBuildStatus => BuildTiltBrush.BuildStatus;
 
-        private static string m_adbPath;
-        private static string AdbPath => m_adbPath;
-
         private static bool AdbExists
         {
             get
             {
-                string path = AdbPath;
+                string path = BuildTiltBrush.AdbPath;
                 if (!string.IsNullOrEmpty(path))
                 {
                     return File.Exists(path);
@@ -261,15 +258,6 @@ namespace TiltBrush
         [MenuItem("OpenBrush/Build/Build Window", false, 1)]
         public static void CreateWindow()
         {
-            if (string.IsNullOrEmpty(m_adbPath))
-            {
-#if UNITY_EDITOR_WIN
-                m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb.exe");
-#else
-                m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb");
-#endif
-            }
-
             BuildWindow window = EditorWindow.GetWindow<BuildWindow>();
             window.Show();
         }
@@ -437,7 +425,7 @@ namespace TiltBrush
                 GUILayout.Space(12);
 
                 // Android support buttons
-                if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android && !string.IsNullOrEmpty(m_adbPath))
+                if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android && !string.IsNullOrEmpty(BuildTiltBrush.AdbPath))
                 {
                     using (var buildBar2 = new HeaderedVerticalLayout("Android Actions"))
                     {
@@ -558,10 +546,10 @@ namespace TiltBrush
                 // Android specific information
                 if (BuildTiltBrush.GuiSelectedBuildTarget == BuildTarget.Android)
                 {
-                    EditorGUILayout.LabelField("Adb Path", m_adbPath ?? "Unset");
-                    if (!String.IsNullOrEmpty(AdbPath))
+                    EditorGUILayout.LabelField("Adb Path", BuildTiltBrush.AdbPath ?? "Unset");
+                    if (!String.IsNullOrEmpty(BuildTiltBrush.AdbPath))
                     {
-                        if (!File.Exists(m_adbPath))
+                        if (!File.Exists(BuildTiltBrush.AdbPath))
                             EditorGUILayout.LabelField("Adb status", "ADB not found in expected path.");
                     }
                 }
@@ -683,7 +671,7 @@ namespace TiltBrush
             if (AdbExists)
             {
                 var process = new System.Diagnostics.Process();
-                process.StartInfo = new System.Diagnostics.ProcessStartInfo(AdbPath, String.Join(" ", arguments));
+                process.StartInfo = new System.Diagnostics.ProcessStartInfo(BuildTiltBrush.AdbPath, String.Join(" ", arguments));
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.RedirectStandardOutput = true;

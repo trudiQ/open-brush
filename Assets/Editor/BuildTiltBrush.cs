@@ -173,6 +173,13 @@ static class BuildTiltBrush
         }
     }
 
+#if UNITY_EDITOR_WIN
+    private static readonly string m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb.exe");
+#else
+    private static readonly string m_adbPath = Path.Combine(UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath, "platform-tools", "adb");
+#endif
+    public static string AdbPath => m_adbPath;
+
     private static string m_buildStatus = "-";
     public static string BuildStatus => m_buildStatus; // info about current status
 
@@ -1184,7 +1191,7 @@ static class BuildTiltBrush
     static string GetDefaultEditorLogFilename()
     {
 #if UNITY_EDITOR_OSX
-    return "~/Library/Logs/Unity/Editor.log";
+        return "~/Library/Logs/Unity/Editor.log";
 #else
         string localAppData = System.Environment.GetFolderPath(
             System.Environment.SpecialFolder.LocalApplicationData);
