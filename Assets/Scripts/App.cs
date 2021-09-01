@@ -160,9 +160,9 @@ namespace TiltBrush
         public static void Log(string msg)
         {
 #if UNITY_EDITOR
-            Debug.Log(msg);
+            Debug.Log("[OB] " + msg);
 #else
-            Console.WriteLine(msg);
+            Console.WriteLine("[OB] " + msg);
 #endif
         }
 
@@ -259,7 +259,7 @@ namespace TiltBrush
             {
                 if (m_DesiredAppState_ != value)
                 {
-                    Console.WriteLine("State <- {0}", value);
+                    Console.WriteLine("App State <- {0}", value);
                 }
                 m_DesiredAppState_ = value;
             }
@@ -2166,7 +2166,7 @@ namespace TiltBrush
             var linkTimeUtc = epoch.AddSeconds(secondsSince1970);
             return linkTimeUtc.ToLocalTime();
 #else
-    return DateTime.Now;
+            return DateTime.Now;
 #endif
         }
 
