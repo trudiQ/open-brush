@@ -15267,11 +15267,21 @@ PrefabInstance:
     - target: {fileID: 2714757513145884939, guid: dedd7823645ca60468aca5f2ff1b9a7f,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.36144
+      value: 1.36
       objectReference: {fileID: 0}
     - target: {fileID: 5247196363800516922, guid: dedd7823645ca60468aca5f2ff1b9a7f,
         type: 3}
       propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639458867270482700, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639458867270482700, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8383487415960193186, guid: dedd7823645ca60468aca5f2ff1b9a7f,
@@ -15279,6 +15289,16 @@ PrefabInstance:
       propertyPath: mat
       value: 
       objectReference: {fileID: 2100000, guid: a05aca4b32b5fd14aa95311556d3df67, type: 2}
+    - target: {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f,
+        type: 3}
+      propertyPath: m_CameraYOffset
+      value: 1.36
+      objectReference: {fileID: 0}
     - target: {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f,
         type: 3}
       propertyPath: m_TrackingSpace
@@ -15289,7 +15309,8 @@ PrefabInstance:
       propertyPath: m_RequestedTrackingMode
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9189854161501623911, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: dedd7823645ca60468aca5f2ff1b9a7f, type: 3}
 --- !u!1 &1251041023
 GameObject:

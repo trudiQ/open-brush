@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 1585114503440396}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4884150587719106}
   - {fileID: 4583193476631122}
@@ -126,28 +126,18 @@ MonoBehaviour:
   onTransformUpdated:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_PoseEvent, SteamVR, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   onTransformChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_PoseEvent, SteamVR, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   onConnectedChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_ConnectedChangedEvent, SteamVR, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   onTrackingChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_TrackingChangedEvent, SteamVR, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   onDeviceIndexChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_DeviceIndexChangedEvent, SteamVR,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   broadcastDeviceChanges: 1
 --- !u!1 &1755718447156954
 GameObject:
@@ -218,26 +208,16 @@ MonoBehaviour:
   onTransformUpdated:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_PoseEvent, SteamVR, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   onTransformChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_PoseEvent, SteamVR, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   onConnectedChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_ConnectedChangedEvent, SteamVR, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   onTrackingChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_TrackingChangedEvent, SteamVR, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   onDeviceIndexChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Valve.VR.SteamVR_Behaviour_Pose_DeviceIndexChangedEvent, SteamVR,
-      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   broadcastDeviceChanges: 1

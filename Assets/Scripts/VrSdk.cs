@@ -423,8 +423,10 @@ namespace TiltBrush
 
         private void OnInputFocus(params object[] args)
         {
-            InputManager.m_Instance.AllowVrControllers = (bool)args[0];
-            m_HasVrFocus = (bool)args[0];
+            bool value = (bool)args[0];
+            App.Log($"VrSdk.OnInputFocus -> {value}");
+            InputManager.m_Instance.AllowVrControllers = value;
+            m_HasVrFocus = value;
         }
 
         public void OnNewPoses() // TODO-XR - Make this private again
@@ -768,7 +770,7 @@ namespace TiltBrush
                 }
                 if (overridePrefab != null)
                 {
-                    Debug.LogWarning("Overriding Vr controls with {0}", overridePrefab);
+                    Debug.LogWarning("Overriding VR controls with {0}", overridePrefab);
                     controlsPrefab = overridePrefab;
                 }
             }
@@ -781,18 +783,18 @@ namespace TiltBrush
                 m_VrControls = controlsObject.GetComponent<VrControllers>();
                 if (m_VrControls == null)
                 {
-                    throw new InvalidOperationException(
-                        string.Format("Bad prefab for {0} {1}", style, controlsPrefab));
+                    throw new InvalidOperationException($"Bad prefab for {style} {controlsPrefab}");
                 }
-                m_VrControls.transform.parent = m_VrSystem.transform;
+
+                // Note that we reparent and retain the transform here:
+                m_VrControls.transform.SetParent(m_VrSystem.transform, false);
             }
 
             if (m_VrControls != null)
             {
                 if (m_NeedsToAttachConsoleScript && ControllerConsoleScript.m_Instance)
                 {
-                    ControllerConsoleScript.m_Instance.AttachToController(
-                        m_VrControls.Brush);
+                    ControllerConsoleScript.m_Instance.AttachToController(m_VrControls.Brush);
                     m_NeedsToAttachConsoleScript = false;
                 }
 
@@ -810,7 +812,7 @@ namespace TiltBrush
         // - Info, which encapsulates VR APIs (OVR, SteamVR, GVR, ...)
         public ControllerInfo CreateControllerInfo(BaseControllerBehavior behavior, bool isLeftHand)
         {
-            Debug.LogFormat("CreateController ({0}): {1}", isLeftHand ? "left" : "right", App.Config.ControllerMode.ToString());
+            App.Log($"CreateController ({(isLeftHand ? "left" : "right")}): {App.Config.ControllerMode.ToString()}");
 
             // An XR controller handles all controllers for platforms that support the Unity XR plugin system.
             if (App.Config.ControllerMode == ControllerMode.XrManagement)
