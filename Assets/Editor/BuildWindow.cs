@@ -19,8 +19,10 @@ using UnityEngine;
 using UnityEditor;
 using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using UnityEngine.XR;
+using Debug = UnityEngine.Debug;
 
 namespace TiltBrush
 {
@@ -382,6 +384,11 @@ namespace TiltBrush
                     bool build = GUILayout.Button("Build");
                     GUI.enabled = !BuildTiltBrush.DoingBackgroundBuild;
                     bool buildBackground = GUILayout.Button("Background Build");
+
+                    if (GUILayout.Button("Show Build Folder") && !String.IsNullOrEmpty(m_currentBuildPath))
+                    {
+                        Process.Start(Path.GetDirectoryName(m_currentBuildPath));
+                    }
 
                     GUI.enabled = BuildTiltBrush.DoingBackgroundBuild;
                     if (GUILayout.Button("Cancel"))
