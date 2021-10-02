@@ -1552,12 +1552,14 @@ namespace TiltBrush
                         if (!m_QuickLoadInputWasValid)
                         {
                             // b/69060780: This workaround is due to the ViewpointScript.Update() also messing
-                            // with the overlay fade, and causing state conflicts in OVR.
+                            // with the overlay fade, and causing state conflicts in OVR
+#if OCULUS_SUPPORTED 
                             if (!(App.VrSdk.Overlay is OculusOverlay) || ViewpointScript.m_Instance.AllowsFading)
                             {
                                 App.VrSdk.Overlay.FadeToCompositor(0);
                             }
                             else
+#endif
                             {
                                 ViewpointScript.m_Instance.SetOverlayToBlack();
                             }
