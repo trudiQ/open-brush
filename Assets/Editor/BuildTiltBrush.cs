@@ -38,6 +38,10 @@ using Environment = System.Environment;
 //      - Oculus is an optional target. Define this flag to add Oculus targets.
 //
 //----------------------------------------------------------------------------------------
+// Notes on packages:
+//  - Require VIVE Wave VR Plugin Essence.
+//      - Essence has other dependencies that we require.
+//----------------------------------------------------------------------------------------
 
 // All output from this class is prefixed with "_btb_" to facilitate extracting
 // it from Unity's very noisy and spammy Editor.log file.
@@ -1518,14 +1522,14 @@ static class BuildTiltBrush
                         {
                             FileUtil.DeleteFileOrDirectory(openvrDll);
                         }
-                        string openvrDll64 = Path.Combine(Path.Combine(Path.Combine(dataDir, "Plugins"), "x86_64"), "openvr_api.dll");
+                        string openvrDll64 = Path.Combine(Path.Combine(dataDir, "Plugins", "x86_64"), "openvr_api.dll");
                         if (File.Exists(openvrDll64))
                         {
                             FileUtil.DeleteFileOrDirectory(openvrDll64);
                         }
 
 
-                        string audioPluginOculusSpatializer = Path.Combine(Path.Combine(dataDir, "Plugins"), "AudioPluginOculusSpatializer.dll");
+                        string audioPluginOculusSpatializer = Path.Combine(Path.Combine(dataDir, "Plugins", "x86_64"), "AudioPluginOculusSpatializer.dll");
                         if (!File.Exists(audioPluginOculusSpatializer))
                         {
                             throw new BuildFailedException($"{audioPluginOculusSpatializer} should be in the build.");
