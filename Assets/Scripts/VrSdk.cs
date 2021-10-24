@@ -352,15 +352,17 @@ namespace TiltBrush
                             OVRManager.VrFocusAcquired += () => { OnInputFocus(true); };
                             OVRManager.VrFocusLost += () => { OnInputFocus(false); };
                         }
+#else
+                        throw new Exception("You have chosen Oculus SDK mode, but do not have OCULUS_SUPPORTED defined.");
 #endif // OCULUS_SUPPORTED
                         break;
                     }
-                case SdkMode.Gvr:
-                    {
-                        var brushGeom = InputManager.Brush.Geometry;
-                        GvrControllerInput.OnPostControllerInputUpdated += OnNewPoses;
-                        break;
-                    }
+                // case SdkMode.Gvr:
+                //     {
+                //         var brushGeom = InputManager.Brush.Geometry;
+                //         GvrControllerInput.OnPostControllerInputUpdated += OnNewPoses;
+                //         break;
+                //     }
                 case SdkMode.UnityXr:
                     {
                         OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
@@ -821,18 +823,20 @@ namespace TiltBrush
             }
 
             // TODO-XR - In time we XR Management should replace all of these.
-            if (App.Config.m_SdkMode == SdkMode.SteamVR)
-            {
-                return new SteamControllerInfo(behavior);
-            }
-            else if (App.Config.m_SdkMode == SdkMode.Oculus)
+            // if (App.Config.m_SdkMode == SdkMode.SteamVR)
+            // {
+            //     return new SteamControllerInfo(behavior);
+            // }
+            // else 
+            if (App.Config.m_SdkMode == SdkMode.Oculus)
             {
                 return new OculusControllerInfo(behavior, isLeftHand);
             }
-            else if (App.Config.m_SdkMode == SdkMode.Gvr)
-            {
-                return new GvrControllerInfo(behavior, isLeftHand);
-            }
+            // else 
+            // if (App.Config.m_SdkMode == SdkMode.Gvr)
+            // {
+            //     return new GvrControllerInfo(behavior, isLeftHand);
+            // }
             else
             {
                 return new NonVrControllerInfo(behavior);
@@ -943,9 +947,6 @@ namespace TiltBrush
                 return false;
             }
 #endif // OCULUS_SUPPORTED
-            /* else if (App.Config.m_SdkMode == SdkMode.Wmr  && somehow check for Wmr headset ) {
-              return false;
-            } */
             return true;
         }
 

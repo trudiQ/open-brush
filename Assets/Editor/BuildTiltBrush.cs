@@ -970,24 +970,25 @@ static class BuildTiltBrush
         }
     }
 
-    class RestoreVrSdks : IDisposable
-    {
-        Dictionary<BuildTargetGroup, string[]> m_prev;
-        public RestoreVrSdks()
-        {
-            m_prev = new[] { BuildTargetGroup.Standalone, BuildTargetGroup.Android }
-                .ToDictionary(
-                    btg => btg,
-                    btg => PlayerSettings.GetVirtualRealitySDKs(btg));
-        }
-        public void Dispose()
-        {
-            foreach (var entry in m_prev)
-            {
-                PlayerSettings.SetVirtualRealitySDKs(entry.Key, entry.Value);
-            }
-        }
-    }
+    // Obsolete in U2020.
+    // class RestoreVrSdks : IDisposable
+    // {
+    //     Dictionary<BuildTargetGroup, string[]> m_prev;
+    //     public RestoreVrSdks()
+    //     {
+    //         m_prev = new[] { BuildTargetGroup.Standalone, BuildTargetGroup.Android }
+    //             .ToDictionary(
+    //                 btg => btg,
+    //                 btg => PlayerSettings.GetVirtualRealitySDKs(btg));
+    //     }
+    //     public void Dispose()
+    //     {
+    //         foreach (var entry in m_prev)
+    //         {
+    //             PlayerSettings.SetVirtualRealitySDKs(entry.Key, entry.Value);
+    //         }
+    //     }
+    // }
 
     class RestoreFileContents : IDisposable
     {
@@ -1249,7 +1250,6 @@ static class BuildTiltBrush
         using (var unused5 = new TempSetScriptingBackend(target, tiltOptions.Il2Cpp))
         using (var unused6 = new TempSetBundleVersion(App.Config.m_VersionNumber, stamp))
         using (var unused10 = new TempSetAppNames(target == BuildTarget.Android, tiltOptions.Description))
-        using (var unused7 = new RestoreVrSdks())
         using (var unused9 = new RestoreFileContents(
             Path.Combine(Path.GetDirectoryName(Application.dataPath),
                 "ProjectSettings/GraphicsSettings.asset")))
