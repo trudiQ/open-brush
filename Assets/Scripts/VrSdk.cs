@@ -172,17 +172,17 @@ namespace TiltBrush
 
                         SetControllerStyle(TiltBrush.ControllerStyle.OculusTouch);
 
-                        if (App.Config.ControllerMode == ControllerMode.Default)
-                        {
-                            // adding components to the VR Camera needed for fading view and getting controller poses.
-                            m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
-                            m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
-
-                            //Add an OVRCameraRig to the VrSystem for Mixed Reality Capture.
-                            var cameraRig = m_VrSystem.AddComponent<OVRCameraRig>();
-                            //Disable the OVRCameraRig's eye cameras, since Open Brush already has its own.
-                            cameraRig.disableEyeAnchorCameras = true;
-                        }
+                        // if (App.Config.ControllerMode == ControllerMode.Default)
+                        // {
+                        //     // adding components to the VR Camera needed for fading view and getting controller poses.
+                        //     m_VrCamera.gameObject.AddComponent<OculusCameraFade>();
+                        //     m_VrCamera.gameObject.AddComponent<OculusPreCullHook>();
+                        //
+                        //     //Add an OVRCameraRig to the VrSystem for Mixed Reality Capture.
+                        //     var cameraRig = m_VrSystem.AddComponent<OVRCameraRig>();
+                        //     //Disable the OVRCameraRig's eye cameras, since Open Brush already has its own.
+                        //     cameraRig.disableEyeAnchorCameras = true;
+                        // }
 #endif // OCULUS_SUPPORTED
                         break;
                     }
@@ -312,14 +312,14 @@ namespace TiltBrush
                 case SdkMode.Oculus:
                     {
 #if OCULUS_SUPPORTED
-                        if (App.Config.ControllerMode == ControllerMode.Default)
-                        {
-                            OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
-
-                            // We shouldn't call this frequently, hence the local cache and callbacks.
-                            OVRManager.VrFocusAcquired += () => { OnInputFocus(true); };
-                            OVRManager.VrFocusLost += () => { OnInputFocus(false); };
-                        }
+                        // if (App.Config.ControllerMode == ControllerMode.Default)
+                        // {
+                        //     OculusHandTrackingManager.NewPosesApplied += OnNewPoses;
+                        //
+                        //     // We shouldn't call this frequently, hence the local cache and callbacks.
+                        //     OVRManager.VrFocusAcquired += () => { OnInputFocus(true); };
+                        //     OVRManager.VrFocusLost += () => { OnInputFocus(false); };
+                        // }
 #else
                         throw new Exception("You have chosen Oculus SDK mode, but do not have OCULUS_SUPPORTED defined.");
 #endif // OCULUS_SUPPORTED
@@ -354,13 +354,13 @@ namespace TiltBrush
                 SteamVR_Events.InputFocus.Remove(OnInputFocusSteam);
                 SteamVR_Events.NewPosesApplied.Remove(OnNewPoses);
             }
-            else if (App.Config.m_SdkMode == SdkMode.Oculus)
-            {
-                if (App.Config.ControllerMode == ControllerMode.Default)
-                {
-                    OculusHandTrackingManager.NewPosesApplied -= OnNewPoses;
-                }
-            }
+            // else if (App.Config.m_SdkMode == SdkMode.Oculus)
+            // {
+            //     if (App.Config.ControllerMode == ControllerMode.Default)
+            //     {
+            //         OculusHandTrackingManager.NewPosesApplied -= OnNewPoses;
+            //     }
+            // }
         }
 
         // -------------------------------------------------------------------------------------------- //
@@ -782,33 +782,10 @@ namespace TiltBrush
         // - Info, which encapsulates VR APIs (OVR, SteamVR, GVR, ...)
         public ControllerInfo CreateControllerInfo(BaseControllerBehavior behavior, bool isLeftHand)
         {
-            App.Log($"CreateController ({(isLeftHand ? "left" : "right")}): {App.Config.ControllerMode.ToString()}");
+            App.Log($"CreateController ({(isLeftHand ? "left" : "right")})");
 
             // An XR controller handles all controllers for platforms that support the Unity XR plugin system.
-            if (App.Config.ControllerMode == ControllerMode.XrManagement)
-            {
-                return new XrControllerInfo(behavior, isLeftHand);
-            }
-
-            // TODO-XR - In time we XR Management should replace all of these.
-            // if (App.Config.m_SdkMode == SdkMode.SteamVR)
-            // {
-            //     return new SteamControllerInfo(behavior);
-            // }
-            // else 
-            if (App.Config.m_SdkMode == SdkMode.Oculus)
-            {
-                return new OculusControllerInfo(behavior, isLeftHand);
-            }
-            // else 
-            // if (App.Config.m_SdkMode == SdkMode.Gvr)
-            // {
-            //     return new GvrControllerInfo(behavior, isLeftHand);
-            // }
-            else
-            {
-                return new NonVrControllerInfo(behavior);
-            }
+            return new XrControllerInfo(behavior, isLeftHand);
         }
 
         // Swap the hand that each ControllerInfo is associated with

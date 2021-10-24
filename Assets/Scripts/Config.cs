@@ -51,14 +51,7 @@ namespace TiltBrush
         Gvr,    // Google VR
         UnityXr // Unity XR plugin system. 
     }
-
-    [Serializable]
-    public enum ControllerMode
-    {
-        Default,     // Whatever the SdkMode default is.
-        XrManagement // Use Unity XR.
-    }
-
+    
     // These names are used in our analytics, so they must be protected from obfuscation.
     // Do not change the names of any of them, unless they've never been released.
     // This enum should be "VrHeadsetHardware".  Controller type is not necessarily
@@ -132,10 +125,6 @@ namespace TiltBrush
 
         // The sdk mode indicates which SDK (UnityXr, OVR, SteamVR, etc.) that we're using to drive the display.
         public SdkMode m_SdkMode;
-
-        [SerializeField]
-        private ControllerMode m_ControllerMode = ControllerMode.Default;
-        public ControllerMode ControllerMode { get => m_ControllerMode; }
 
         // Whether or not to just do an automatic profile and then exit.
         public bool m_AutoProfile;
