@@ -592,6 +592,7 @@ namespace TiltBrush
             return "";
         }
 
+        // At this point the XR devices should have been discovered.
         void Start()
         {
             // Use of ControllerConsoleScript must wait until Start()

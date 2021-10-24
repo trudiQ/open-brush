@@ -23,44 +23,6 @@ using Valve.VR;
 
 namespace TiltBrush
 {
-    //   - Distribution
-    //       - Build
-    //           - SDK
-    //           * Platform - Win32/64, Android, iOS.
-    //           * Options
-    //                * Experimental
-    //           * Config
-    //               * Develop
-    //               * Profile
-    //               * Release
-    //       - Device
-    //           - Overlay
-    //           - Controller
-
-    // All of the details required to build for a distribution.
-    //  - We may want to specialise things like store or analytics features.
-    // public abstract class Distribution
-    // {
-    //     // public Build Build;
-    //     // public Sdk Sdk;
-    // }
-
-    // public abstract class Sdk
-    // {
-    // }
-
-    // public abstract class Device
-    // {
-    //     private OverlayImplementation m_overlay;
-    //     private List<Controller> m_controllers = new List<Controller>();
-    // }
-
-    // public abstract class Controller
-    // {
-    //
-    // }
-
-
     // If these names are used in analytics etc, they must be protected from obfuscation.
     // Do not change the names of any of them, unless they've never been released.
     [Serializable]
@@ -79,7 +41,13 @@ namespace TiltBrush
     }
 
     //
-    // The VrSdk is an abstraction over the actual VR hardware and SDK. It is responsible for:
+    // The VrSdk is an abstraction over the actual VR hardware and SDK.
+    //
+    // Note that Unity XR does not currently mean that this abstraction will disappear. Everything
+    // does not become generic under XR, there are still platform features (e.g. overlays) that
+    // are abstracted and the SDK features used. It is hoped these provide better performance/quality.
+    //
+    // It is responsible for:
     //
     //   * Initializating the VR system, cameras, controllers and associated state.
     //   * Providing hardware- and SDK-specific controls via a non-specific interface.

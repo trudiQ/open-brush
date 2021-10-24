@@ -452,9 +452,11 @@ namespace TiltBrush
         //     }
         //     return true;
         // }
-
+        
         void Start()
         {
+            // XR devices should be discovered before Start, so can not create controllers.
+
             App.VrSdk.NewControllerPosesApplied += OnControllerPosesApplied;
             // If we're initializing SteamVR, defer this call until our controller type is determined.
             if (!App.VrSdk.IsInitializingSteamVr)
