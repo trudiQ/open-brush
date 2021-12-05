@@ -130,6 +130,8 @@ namespace TiltBrush
         // Get headset device. Make sure you check it is valid: HeadsetDevice.isValid
         public InputDevice HeadsetDevice => m_Headset;
 
+        public bool IsHeadsetConnected => m_Headset.isValid;
+
         public string HeadsetDeviceName => m_Headset.isValid ? m_Headset.name : "Unknown";
 
         public VrControllers VrControls => m_VrControls;

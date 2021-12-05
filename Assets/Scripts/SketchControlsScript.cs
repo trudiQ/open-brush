@@ -1511,7 +1511,7 @@ namespace TiltBrush
                 AudioManager.m_Instance.PlayPinCushionSound(true);
             }
             // Pan.
-            else if (!hasController && Input.GetMouseButton(2))
+            else if (!hasController && InputManager.Device.GetMouseButton(2))
             {
                 SwitchState(InputState.Pan);
             }
@@ -3280,7 +3280,7 @@ namespace TiltBrush
 
         void UpdatePanInput()
         {
-            if (Input.GetMouseButton(2))
+            if (InputManager.Device.GetMouseButton(2))
             {
                 Vector3 vPanDiff = Vector3.zero;
                 vPanDiff += (Vector3.right * m_MouseDeltaXScaled);

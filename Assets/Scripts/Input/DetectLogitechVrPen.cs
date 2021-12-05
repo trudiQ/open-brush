@@ -43,7 +43,7 @@ namespace TiltBrush
         }
 
         private bool m_TryToSwap;
-        private bool m_IsPen;
+        private bool m_IsPen = false;
 
         private void LateUpdate()
         {
@@ -60,49 +60,49 @@ namespace TiltBrush
 
         public void Initialize(int deviceIndex)
         {
-            if (IsLogitechPen((uint)deviceIndex))
-            {
-                IsPen = true;
-
-                if (GetComponent<BaseControllerBehavior>().ControllerName ==
-                    InputManager.ControllerName.Wand)
-                {
-                    // This controller is the LogiTech VR Pen but it's also set to be the wand. Try to swap
-                    // the controllers in the late update, after all the indices have been set.
-                    m_TryToSwap = true;
-                }
-            }
-            else
-            {
-                IsPen = false;
-            }
+            // if (IsLogitechPen((uint)deviceIndex))
+            // {
+            //     IsPen = true;
+            //
+            //     if (GetComponent<BaseControllerBehavior>().ControllerName ==
+            //         InputManager.ControllerName.Wand)
+            //     {
+            //         // This controller is the LogiTech VR Pen but it's also set to be the wand. Try to swap
+            //         // the controllers in the late update, after all the indices have been set.
+            //         m_TryToSwap = true;
+            //     }
+            // }
+            // else
+            // {
+            //     IsPen = false;
+            // }
         }
 
-        public static bool IsLogitechPen(uint deviceIndex)
-        {
-            ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
-            uint bufferCapacity = OpenVR.System.GetStringTrackedDeviceProperty(
-                deviceIndex,
-                ETrackedDeviceProperty.Prop_ControllerType_String,
-                null,
-                0,
-                ref error);
-            System.Text.StringBuilder buffer = new System.Text.StringBuilder((int)bufferCapacity);
-            OpenVR.System.GetStringTrackedDeviceProperty(
-                deviceIndex,
-                ETrackedDeviceProperty.Prop_ControllerType_String,
-                buffer,
-                bufferCapacity,
-                ref error);
-            string s = buffer.ToString();
-            if (error == ETrackedPropertyError.TrackedProp_Success)
-            {
-                if (s.StartsWith("logitech_stylus"))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        // public static bool IsLogitechPen(uint deviceIndex)
+        // {
+        //     ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
+        //     uint bufferCapacity = OpenVR.System.GetStringTrackedDeviceProperty(
+        //         deviceIndex,
+        //         ETrackedDeviceProperty.Prop_ControllerType_String,
+        //         null,
+        //         0,
+        //         ref error);
+        //     System.Text.StringBuilder buffer = new System.Text.StringBuilder((int)bufferCapacity);
+        //     OpenVR.System.GetStringTrackedDeviceProperty(
+        //         deviceIndex,
+        //         ETrackedDeviceProperty.Prop_ControllerType_String,
+        //         buffer,
+        //         bufferCapacity,
+        //         ref error);
+        //     string s = buffer.ToString();
+        //     if (error == ETrackedPropertyError.TrackedProp_Success)
+        //     {
+        //         if (s.StartsWith("logitech_stylus"))
+        //         {
+        //             return true;
+        //         }
+        //     }
+        //     return false;
+        // }
     }
 } // namespace TiltBrush

@@ -22,6 +22,17 @@ using TouchPhase = UnityEngine.TouchPhase;
 namespace TiltBrush
 {
 
+    // FIXME: This is hack to get new input system compiling. Input API needs refactoring.
+    public class OldInputDevice
+    {
+        public float GetAxis(string what) { return 0.0f; }
+        public bool GetMouseButton(int button) { return false; }
+        public bool GetMouseButtonDown(int button) { return false; }
+        
+        public bool GetKey(KeyCode code) { return false; }
+        public bool GetKeyDown(KeyCode code) { return false; }
+    }
+    
     // Ordering:
     // - Viewpoint must come before InputManager (InputManager uses Viewpoint)
     // - InputManager must come before scripts that use it, specifically SketchControls
@@ -254,6 +265,8 @@ namespace TiltBrush
             public Vector2 m_Pos;
         }
 
+        public static readonly OldInputDevice Device = new OldInputDevice(); // FIXME: Hack to get new input system working.
+
         //
         // Static API
         //
@@ -266,7 +279,7 @@ namespace TiltBrush
         public static ControllerInfo[] Controllers { get => m_Instance.m_ControllerInfos; }
         public static ControllerInfo Wand { get => Controllers[(int)ControllerName.Wand]; }
         public static ControllerInfo Brush { get => Controllers[(int)ControllerName.Brush]; }
-        static public event Action OnSwapControllers;
+        public static event Action OnSwapControllers;
 
         //
         // Inspector configurables
@@ -296,7 +309,7 @@ namespace TiltBrush
         // Public properties
         //
 
-        static public void ControllersHaveChanged()
+        public static void ControllersHaveChanged()
         {
             OnSwapControllers();
         }
@@ -550,11 +563,12 @@ namespace TiltBrush
                 App.VrSdk.OnNewPoses(); // TODO-XR - HACK??
 
                 //cache touch inputs so we can control their usage
-                m_Touch.m_Valid = (Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began);
-                if (m_Touch.m_Valid)
-                {
-                    m_Touch.m_Pos = Input.GetTouch(0).position;
-                }
+                // FIXME: @bill remove for now.
+                // m_Touch.m_Valid = (Device.touchCount > 0) && (Device.GetTouch(0).phase == TouchPhase.Began);
+                // if (m_Touch.m_Valid)
+                // {
+                //     m_Touch.m_Pos = Device.GetTouch(0).position;
+                // }
 
                 // Update touch locators.
                 // Controller pad touch locator should be active if thumb is on the pad.
@@ -616,7 +630,7 @@ namespace TiltBrush
             for (int i = 0; i < codes.Length; ++i)
             {
                 KeyCode code = codes[i];
-                if (Input.GetKey(code))
+                if (Device.GetKey(code))
                 {
                     return true;
                 }
@@ -634,7 +648,7 @@ namespace TiltBrush
             for (int i = 0; i < codes.Length; ++i)
             {
                 KeyCode code = codes[i];
-                if (Input.GetKeyDown(code))
+                if (Device.GetKeyDown(code))
                 {
                     return true;
                 }
@@ -839,28 +853,28 @@ namespace TiltBrush
 
         public Vector2 GetMouseMoveDelta()
         {
-            Vector2 mv = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            Vector2 mv = new Vector2(Device.GetAxis("Mouse X"), Device.GetAxis("Mouse Y"));
             return new Vector2(Mathf.Abs(mv.x) > m_InputThreshold ? mv.x : 0f,
                 Mathf.Abs(mv.y) > m_InputThreshold ? mv.y : 0f);
         }
 
         public float GetMouseWheel()
         {
-            return Input.GetAxis("Mouse ScrollWheel");
+            return Device.GetAxis("Mouse ScrollWheel");
         }
 
         public bool GetMouseButton(int button)
         {
             // Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
             // presses when you fiddle with the joystick.
-            return !App.Config.IsMobileHardware && Input.GetMouseButton(button);
+            return !App.Config.IsMobileHardware && Device.GetMouseButton(button);
         }
 
         public bool GetMouseButtonDown(int button)
         {
             // Mouse input is ignored on mobile platform because the Oculus Quest seems to emulate mouse
             // presses when you fiddle with the joystick.
-            return !App.Config.IsMobileHardware && Input.GetMouseButtonDown(button);
+            return !App.Config.IsMobileHardware && Device.GetMouseButtonDown(button);
         }
 
         public bool IsBrushScrollActive()
@@ -873,7 +887,7 @@ namespace TiltBrush
             // Check mouse first.
             if (!App.Config.IsMobileHardware)
             {
-                float fMouse = Input.GetAxis("Mouse X");
+                float fMouse = Device.GetAxis("Mouse X");
                 if (Mathf.Abs(fMouse) > m_InputThreshold)
                 {
                     return fMouse;
@@ -912,7 +926,7 @@ namespace TiltBrush
 
         public float GetToolSelection()
         {
-            float fScrollWheel = Input.GetAxis("Mouse ScrollWheel");
+            float fScrollWheel = Device.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(fScrollWheel) > m_InputThreshold)
             {
                 return fScrollWheel;

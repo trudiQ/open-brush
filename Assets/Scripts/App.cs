@@ -75,6 +75,15 @@ namespace TiltBrush
             "All your " + kAppDisplayName + " files have been moved to\n" +
             "/sdcard/" + kAppFolderName + ".\n";
 
+        // This is the initialisation phase that the app is in.
+        private enum InitState
+        {
+            Uninitialised,
+            WaitingForDeviceToConnect,
+            DeviceConnected,
+        }
+        
+        // This is the update mode that the app is in.
         public enum AppState
         {
             Error,
@@ -249,9 +258,11 @@ namespace TiltBrush
         private float m_QuickLoadHintCountdown;
         private bool m_QuickLoadInputWasValid;
         private bool m_QuickLoadEatInput;
+
+        private InitState m_CurrentInitState = InitState.Uninitialised;
+        
         private AppState m_CurrentAppState;
-        // Temporary: to narrow down b/37256058
-        private AppState m_DesiredAppState_;
+        private AppState m_DesiredAppState_; // Temporary: to narrow down b/37256058
         private AppState m_DesiredAppState
         {
             get => m_DesiredAppState_;
@@ -575,35 +586,33 @@ namespace TiltBrush
                 m_DriveAccess.UninitializeAsync().AsAsyncVoid();
             }
         }
-
-        // Called from HttpListener thread.  Supported requests:
-        //     /load?<SKETCH_PATH>
-        //         Loads sketch given path on local filesystem.  Any pending load is canceled.
-        //         Response body:  none
-        string HttpLoadSketchCallback(HttpListenerRequest request)
-        {
-            var urlPath = request.Url.LocalPath;
-            var query = Uri.UnescapeDataString(request.Url.Query);
-            if (urlPath == "/load" && query.Length > 1)
-            {
-                var filePath = query.Substring(1);
-                m_RequestedTiltFileQueue.Enqueue(filePath);
-            }
-            return "";
-        }
-
-        // At this point the XR devices should have been discovered.
+        
         void Start()
         {
+            m_CurrentInitState = InitState.WaitingForDeviceToConnect;
+            m_CurrentAppState = AppState.Standard;
+            
             // Use of ControllerConsoleScript must wait until Start()
             ControllerConsoleScript.m_Instance.AddNewLine(GetStartupString());
 
-            if (!VrSdk.IsHmdInitialized())
+#if USD_SUPPORTED
+            // Load the Usd Plugins
+            InitUsd.Initialize();
+#endif
+            
+            if (StartupError)
             {
-                Debug.Log("VR HMD was not initialized on startup.");
-                StartupError = true;
-                CreateErrorDialog();
+                m_DesiredAppState = AppState.Error;
             }
+        }
+        
+        // Initialise our VR environment. We have to wait until the device is connected until we can do
+        // this as some of it is device dependent.
+        private void InitVrEnvironment()
+        {
+            m_DesiredAppState = AppState.LoadingBrushesAndLighting;
+            
+            //Debug.Assert(VrSdk.IsHmdInitialized());
 
             m_TargetFrameRate = VrSdk.GetHmdTargetFrameRate();
             if (VrSdk.GetHmdDof() == TiltBrush.VrSdk.DoF.None)
@@ -616,11 +625,6 @@ namespace TiltBrush
                 Vector3 extents = VrSdk.GetRoomExtents();
                 m_RoomRadius = Mathf.Min(Mathf.Abs(extents.x), Mathf.Abs(extents.z));
             }
-
-#if USD_SUPPORTED
-            // Load the Usd Plugins
-            InitUsd.Initialize();
-#endif
 
             foreach (string s in Config.m_SketchFiles)
             {
@@ -699,7 +703,7 @@ namespace TiltBrush
                 m_OdsPivot != null,
                 m_OdsPivot ? m_OdsPivot.GetComponent<OdsDriver>().FramesToCapture
                     : 0);
-
+            
             if (!AppAllowsCreation())
             {
                 TutorialManager.m_Instance.IntroState = IntroTutorialState.InitializeForNoCreation;
@@ -713,7 +717,7 @@ namespace TiltBrush
                 TutorialManager.m_Instance.ActivateControllerTutorial(InputManager.ControllerName.Brush, false);
                 TutorialManager.m_Instance.ActivateControllerTutorial(InputManager.ControllerName.Wand, false);
             }
-
+            
             ViewpointScript.m_Instance.Init();
             QualityControls.m_Instance.Init();
             bool bVR = VrSdk.GetHmdDof() != TiltBrush.VrSdk.DoF.None;
@@ -737,14 +741,7 @@ namespace TiltBrush
                         SketchControlsScript.ControlsType.KeyboardMouse;
                     break;
             }
-
-            m_CurrentAppState = AppState.Standard;
-            m_DesiredAppState = AppState.LoadingBrushesAndLighting;
-            if (StartupError)
-            {
-                m_DesiredAppState = AppState.Error;
-            }
-
+            
             m_SketchSurfacePanel = m_SketchSurface.GetComponent<SketchSurfacePanel>();
 
             ViewpointScript.m_Instance.SetHeadMeshVisible(App.UserConfig.Flags.ShowHeadset);
@@ -765,7 +762,6 @@ namespace TiltBrush
             {
                 StateChanged += AutoProfileOnStartAndQuit;
             }
-
         }
 
         private void AutoProfileOnStartAndQuit(AppState oldState, AppState newState)
@@ -798,8 +794,28 @@ namespace TiltBrush
                 m_SceneTransform.hasChanged = false;
             }
 #endif
+            // Deal with the device connecting async, and maybe late.
+            if (m_CurrentInitState == InitState.WaitingForDeviceToConnect)
+            {
+                if (!StartupError)
+                {
+                    if (VrSdk.IsHeadsetConnected)
+                    {
+                        m_CurrentInitState = InitState.DeviceConnected;
+                        InitVrEnvironment();
+                    }
+                    else
+                    {
+                        Debug.Log("VR HMD was not initialized on startup.");
+                        StartupError = true;
+                        m_DesiredAppState = AppState.Error;
+                        CreateFailedToDetectVrDialog();
+                    }
+                }
+                // return;
+            }
 
-            //look for state change
+            // look for state change
             if (m_CurrentAppState != m_DesiredAppState)
             {
                 SwitchState();
@@ -807,7 +823,7 @@ namespace TiltBrush
 
             if (InputManager.m_Instance.GetCommand(InputManager.SketchCommands.Activate))
             {
-                //kinda heavy-handed, but whatevs
+                // kinda heavy-handed, but whatevs
                 InitCursor();
             }
 
@@ -1673,6 +1689,22 @@ namespace TiltBrush
             return false;
         }
 
+        // Called from HttpListener thread.  Supported requests:
+        //     /load?<SKETCH_PATH>
+        //         Loads sketch given path on local filesystem.  Any pending load is canceled.
+        //         Response body:  none
+        string HttpLoadSketchCallback(HttpListenerRequest request)
+        {
+            var urlPath = request.Url.LocalPath;
+            var query = Uri.UnescapeDataString(request.Url.Query);
+            if (urlPath == "/load" && query.Length > 1)
+            {
+                var filePath = query.Substring(1);
+                m_RequestedTiltFileQueue.Enqueue(filePath);
+            }
+            return "";
+        }
+
         void InitCursor()
         {
             if (StartupError)
@@ -1767,7 +1799,7 @@ namespace TiltBrush
             }
         }
 
-        public void CreateErrorDialog(string msg = null)
+        public void CreateFailedToDetectVrDialog(string msg = null)
         {
             GameObject dialog = Instantiate(m_ErrorDialog);
             var textXf = dialog.transform.Find("Text");
@@ -1880,7 +1912,7 @@ namespace TiltBrush
             if (!Path.IsPathRooted(m_UserPath))
             {
                 StartupError = true;
-                CreateErrorDialog("Failed to find Documents folder.\nIn Windows, try modifying your Controlled Folder Access settings.");
+                CreateFailedToDetectVrDialog("Failed to find Documents folder.\nIn Windows, try modifying your Controlled Folder Access settings.");
             }
         }
 
